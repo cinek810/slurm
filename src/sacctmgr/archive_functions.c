@@ -540,20 +540,20 @@ extern int sacctmgr_archive_dump(int argc, char **argv)
 		}
 	}
 
-	rc = slurmdb_archive(db_conn, arch_cond);
-	if (rc == SLURM_SUCCESS) {
-		if (commit_check("Would you like to commit changes?")) {
-			slurmdb_connection_commit(db_conn, 1);
-		} else {
-			printf(" Changes Discarded\n");
-			slurmdb_connection_commit(db_conn, 0);
-		}
-	} else {
-		exit_code = 1;
-		fprintf(stderr, " Problem dumping archive: %s\n",
-			slurm_strerror(rc));
-		rc = SLURM_ERROR;
-	}
+        if (commit_check("This command may permanently remove information from"\
+                         " Slurm accounting database.\n"  \
+                         "Do you want to continue?")) {
+                rc = slurmdb_archive(db_conn, arch_cond);
+                if (rc != SLURM_SUCCESS) {
+                        exit_code = 1;
+                        fprintf(stderr, " Problem dumping archive: %s\n",
+                                slurm_strerror(rc));
+                        rc = SLURM_ERROR;
+                }
+        } else {
+                printf(" Operation canceled\n");
+        }
+
 	slurmdb_destroy_archive_cond(arch_cond);
 
 	return rc;
