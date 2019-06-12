@@ -263,7 +263,17 @@ static int _is_a_lwp(uint32_t pid)
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		error("%s: open() %s failed: %m", __func__, filename);
+		/*
+		 * In case of "no such file or directory" we should not throw
+		 * error to end user, since it's normal situation. This is
+		 * unavoidable race condition.
+		 */
+		if (errno == ENOENT) {
+			debug("%s: pid: %u ended before gathering of accounting data completed",
+			      __func__, pid);
+		} else {
+			error("%s: open() %s failed: %m", __func__, filename);
+		}
 		xfree(filename);
 		return -1;
 	}
@@ -275,7 +285,12 @@ again:
 		goto again;
 	}
 	if (n <= 0) {
-		error("%s: %d read() attempts on %s failed: %m", __func__,
+		/*
+		 * If we are failing here probably the process ended between
+		 * open and read calls. It's rear, but we we should not
+		 * throw an error - it's normal situation.
+		 */
+		debug("%s: %d read() attempts on %s failed: %m", __func__,
 		      attempts, filename);
 		close(fd);
 		xfree(filename);
