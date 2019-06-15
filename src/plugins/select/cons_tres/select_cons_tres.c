@@ -1112,6 +1112,21 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 				select_node_record[i].node_ptr->gres_list);
 	}
 	_create_part_data();
+
+	/*
+	 * Socket allocation should be done by CR_Socket, CPUs==Sockets
+	 * when CoresPerSocket != 1 and ThresPerCore !=1 will result
+	 * in overallocation (compared to CPUs)
+	 */
+	for (int i=0; i< node_record_count; i++ ) {
+		struct node_record * n = node_record_table_ptr;
+		if ((n[i].cpus != n[i].sockets * n[i].cores) &&
+		    (n[i].cpus != n[i].sockets * n[i].cores * n[i].threads)) {
+			fatal("NodeNames=%s CPUs=%d doesn't match neither Sockets*CoresPerSocket nor Sockets*CoresPerSocket*ThreadsPerCore",
+			      n[i].name, n[i].cpus);
+		}
+	}
+
 	_dump_nodes();
 
 	return SLURM_SUCCESS;
