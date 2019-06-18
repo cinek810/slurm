@@ -4781,7 +4781,8 @@ static int _select_nodes_parts(struct job_record *job_ptr, bool test_only,
 				    (part_limits_rc == WAIT_PART_DOWN))
 					rc = ESLURM_PARTITION_DOWN;
 			}
-			if ((rc == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) &&
+			if (((rc == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) ||
+			     (rc == ESLURM_REQUESTED_NODE_CONFIG_UNAVAILABLE))&&
 			    (slurmctld_conf.enforce_part_limits ==
 			     PARTITION_ENFORCE_ALL)) {
 				best_rc = rc;	/* Job can not run */
