@@ -492,21 +492,26 @@ extern void deallocate_nodes(struct job_record *job_ptr, bool timeout,
 #endif
         int issuspended=IS_JOB_SUSPENDED(job_ptr);
         if (suspended && !issuspended) {
-                debug("deallocated_nodes: suspended(%d) not aligned with job_ptr(%d)",suspended,issuspended);
+                debug("CINEK deallocated_nodes: suspended(%d) not aligned with job_ptr(%d)",suspended,issuspended);
         } else {
-                debug("dellocate_nodes: suspend(%d) alligned with JOB_SUSPENDED(%d)",suspended,issuspended);
+                debug("CINEK dellocate_nodes: suspend(%d) aligned with JOB_SUSPENDED(%d)",suspended,issuspended);
         }
 
         int istimeout=IS_JOB_TIMEOUT(job_ptr);
         if (timeout && !istimeout) {
-                debug("deallocated_nodes: timeout(%d) not aligned with job_ptr(%d)",timeout,istimeout);
+                debug("CINEK deallocated_nodes: timeout(%d) not aligned with job_ptr(%d)",timeout,istimeout);
         } else {
-                debug("deallocate_nodes: timeout(%d) aligned with JOB_TIMEOUT(%d)"
+                debug("CINEK deallocate_nodes: timeout(%d) aligned with JOB_TIMEOUT(%d)"
                       ,timeout,istimeout);
         }
-
-       debug("deallocated_nodes: preempted(%d) job_state:%d",preempted,job_ptr->job_state);
-        
+        int ispreempted=job_ptr->preempt_in_progress;
+        if ( preempted && !ispreempted) {
+                debug("CINEK deallocated_nodes: preempted(%d) not aligned with job_ptr:(%d)",preempted,ispreempted);
+        }
+        else {
+                debug("CINEK deallocated_nodes: preempted(%d) aligned with job_ptr:(%d)",preempted,ispreempted);
+        }
+ 
 	xassert(job_ptr);
 	xassert(job_ptr->details);
 
