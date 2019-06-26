@@ -846,26 +846,6 @@ static int _parse_nodename(void **dest, slurm_parser_enum_t type,
 			if (no_cpus) {		/* infer missing CPUs= */
 				n->cpus = n->sockets * n->cores * n->threads;
 			}
-			/* if only CPUs= and Sockets=
-			 * specified check for match */
-			if (!no_cpus    && !no_sockets &&
-			     no_cores   &&  no_threads &&
-			     (n->cpus != n->sockets)) {
-				n->sockets = n->cpus;
-				error("NodeNames=%s CPUs doesn't match "
-				      "Sockets, setting Sockets to %d",
-				      n->nodenames, n->sockets);
-			}
-			computed_procs = n->sockets * n->cores * n->threads;
-			if ((n->cpus != n->sockets) &&
-			    (n->cpus != n->sockets * n->cores) &&
-			    (n->cpus != computed_procs)) {
-				error("NodeNames=%s CPUs=%d doesn't match "
-				      "Sockets*CoresPerSocket*ThreadsPerCore "
-				      "(%d), resetting CPUs",
-				      n->nodenames, n->cpus, computed_procs);
-				n->cpus = computed_procs;
-			}
 		} else {
 			/* In this case Boards=# is used.
 			 * CPUs=# or Procs=# are ignored.
@@ -902,15 +882,18 @@ static int _parse_nodename(void **dest, slurm_parser_enum_t type,
 			} else {
 				n->sockets = n->boards;
 			}
-			/* Node boards factored into sockets */
-			calc_cpus = n->sockets * n->cores * n->threads;
-			if (!no_cpus && (n->cpus != calc_cpus)) {
-				error("NodeNames=%s CPUs=# or Procs=# "
-				      "with Boards=# is invalid and "
-				      "is ignored.", n->nodenames);
-			}
-			n->cpus = calc_cpus;
 		}
+                /* Node boards factored into sockets */
+                computed_procs = n->sockets * n->cores * n->threads;
+                if ((n->cpus != n->sockets * n->cores) &&
+                    (n->cpus != computed_procs)) {
+                        error("NodeNames=%s CPUs=%d doesn't match "
+                              "Sockets*CoresPerSocket*ThreadsPerCore "
+                              "(%d), resetting CPUs",
+                              n->nodenames, n->cpus, computed_procs);
+                        n->cpus = computed_procs;
+                }
+
 
 		if (n->core_spec_cnt >= (n->sockets * n->cores)) {
 			error("NodeNames=%s CoreSpecCount=%u is invalid, "
