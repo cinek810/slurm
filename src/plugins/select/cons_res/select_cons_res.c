@@ -2237,8 +2237,7 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 			select_node_record[i].real_memory = node_ptr[i].
 				real_memory;
 		}
-		tot_core = select_node_record[i].boards  *
-			   select_node_record[i].sockets *
+		tot_core = select_node_record[i].sockets *
 			   select_node_record[i].cores;
 		if (tot_core >= select_node_record[i].cpus)
 			select_node_record[i].vpus = 1;
