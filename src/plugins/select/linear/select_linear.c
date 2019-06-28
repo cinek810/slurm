@@ -377,7 +377,7 @@ static int _get_avail_cpus(struct job_record *job_ptr, int index)
 {
 	struct node_record *node_ptr;
 	int avail_cpus;
-	uint16_t boards_per_node, sockets_per_board;
+	uint16_t boards_per_node, sockets_per_node;
 	uint16_t cores_per_socket, thread_per_core;
 	uint16_t cpus_per_node, cpus_per_task = 1;
 	uint16_t ntasks_per_node = 0, ntasks_per_core;
@@ -400,21 +400,21 @@ static int _get_avail_cpus(struct job_record *job_ptr, int index)
 	if (select_fast_schedule) { /* don't bother checking each node */
 		cpus_per_node     = node_ptr->config_ptr->cpus;
 		boards_per_node   = node_ptr->config_ptr->boards;
-		sockets_per_board = node_ptr->config_ptr->sockets;
+		sockets_per_node = node_ptr->config_ptr->sockets;
 		cores_per_socket  = node_ptr->config_ptr->cores;
 		thread_per_core   = node_ptr->config_ptr->threads;
 	} else {
 		cpus_per_node     = node_ptr->cpus;
 		boards_per_node   = node_ptr->boards;
-		sockets_per_board = node_ptr->sockets;
+		sockets_per_node = node_ptr->sockets;
 		cores_per_socket  = node_ptr->cores;
 		thread_per_core   = node_ptr->threads;
 	}
 
 #if SELECT_DEBUG
 	info("host:%s HW_ cpus_per_node:%u boards_per_node:%u "
-	     "sockets_per_boards:%u cores_per_socket:%u thread_per_core:%u ",
-	     node_ptr->name, cpus_per_node, boards_per_node, sockets_per_board,
+	     "sockets_per_node:%u cores_per_socket:%u thread_per_core:%u ",
+	     node_ptr->name, cpus_per_node, boards_per_node, sockets_per_node,
 	     cores_per_socket, thread_per_core);
 #endif
 	/* pick defaults for any unspecified items */
@@ -426,21 +426,21 @@ static int _get_avail_cpus(struct job_record *job_ptr, int index)
 		cores_per_socket = 1;
 	if (boards_per_node <= 0)
 		boards_per_node = 1;
-	if (sockets_per_board <= 0) {
-		sockets_per_board = cpus_per_node / boards_per_node /
-				    cores_per_socket / thread_per_core;
+	if (sockets_per_node <= 0) {
+		sockets_per_node = cpus_per_node / cores_per_socket
+				/ thread_per_core;
 	}
 
 	nppcu = ntasks_per_core;
-	total_cores = boards_per_node * sockets_per_board * cores_per_socket;
+	total_cores = sockets_per_node * cores_per_socket;
 	avail_cpus = adjust_cpus_nppcu(nppcu, cpus_per_task,
 				       total_cores, cpus_per_node);
 	if (ntasks_per_node > 0)
 		avail_cpus = MIN(avail_cpus, ntasks_per_node * cpus_per_task);
 #if SELECT_DEBUG
 	debug("avail_cpus index %d = %u (out of boards_per_node:%u "
-	      "sockets_per_boards:%u cores_per_socket:%u thread_per_core:%u)",
-	      index, avail_cpus, boards_per_node, sockets_per_board,
+	      "sockets_per_node:%u cores_per_socket:%u thread_per_core:%u)",
+	      index, avail_cpus, boards_per_node, sockets_per_node,
 	      cores_per_socket, thread_per_core);
 #endif
 	return(avail_cpus);

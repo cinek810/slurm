@@ -1097,7 +1097,6 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 					node_ptr[i].real_memory;
 		}
 		select_node_record[i].tot_sockets =
-				select_node_record[i].boards *
 				select_node_record[i].sockets;
 		select_node_record[i].tot_cores =
 				select_node_record[i].tot_sockets *
@@ -1951,7 +1950,7 @@ extern int select_p_select_nodeinfo_set_all(void)
 			node_cpus    = node_ptr->cpus;
 			node_threads = node_ptr->threads;
 		}
-		total_node_cores = node_boards * node_sockets * node_cores;
+		total_node_cores = node_sockets * node_cores;
 
 		if (alloc_core_bitmap && alloc_core_bitmap[n])
 			alloc_cores = bit_set_count(alloc_core_bitmap[n]);
@@ -2202,7 +2201,6 @@ extern int select_p_update_node_config(int index)
 		select_node_record[index].sockets =
 			select_node_record[index].node_ptr->config_ptr->sockets;
 		select_node_record[index].tot_sockets =
-			select_node_record[index].boards *
 			select_node_record[index].sockets;
 	}
 
