@@ -122,7 +122,8 @@ static void _set_cpu_set_bitstr(bitstr_t *cpu_set_bitstr,
 
 	// If this fails, then something went horribly wrong
 	if (bitstr_bits != cpu_set_bits)
-		fatal("%s: bitstr_bits != cpu_set_bits", __func__);
+		fatal("%s: %s: bitstr_bits != cpu_set_bits",
+		      plugin_type, __func__);
 
 	bit_cur = bitstr_bits - 1;
 
@@ -158,8 +159,8 @@ static void _set_cpu_set_bitstr(bitstr_t *cpu_set_bitstr,
 	xassert(bit_cur == -1);
 	// If NVML gave us an empty CPU affinity, then something is very wrong
 	if (bit_set_count(cpu_set_bitstr) == 0)
-		fatal("%s: cpu_set_bitstr is empty! No CPU affinity for device",
-		      __func__);
+		fatal("%s: %s: cpu_set_bitstr is empty! No CPU affinity for device",
+		      plugin_type, __func__);
 }
 
 
@@ -173,12 +174,14 @@ static void _nvml_init(void)
 	START_TIMER;
 	nvml_rc = nvmlInit();
 	END_TIMER;
-	debug3("nvmlInit() took %ld microseconds", DELTA_TIMER);
+	debug3("%s: %s: nvmlInit() took %ld microseconds",
+		plugin_type, __func__,  DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS)
-		error("Failed to initialize NVML: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to initialize NVML: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	else
-		info("Successfully initialized NVML");
+		info("%s: %s: Successfully initialized NVML",
+		     plugin_type, __func__);
 }
 
 /*
@@ -191,11 +194,14 @@ static void _nvml_shutdown(void)
 	START_TIMER;
 	nvml_rc = nvmlShutdown();
 	END_TIMER;
-	debug3("nvmlShutdown() took %ld microseconds", DELTA_TIMER);
+	debug3("%s: %s: nvmlShutdown() took %ld microseconds",
+		plugin_type, __func__, DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS)
-		error("Failed to shut down NVML: %s", nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to shut down NVML: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	else
-		info("Successfully shut down NVML");
+		info("%s: %s: Successfully shut down NVML",
+		     plugin_type, __func__);
 }
 
 static unsigned int _xlate_freq_value(char *gpu_freq)
@@ -246,8 +252,8 @@ static void _parse_gpu_freq2(char *gpu_freq, unsigned int *gpu_freq_code,
 			if (!strcasecmp(tok, "memory")) {
 				if (!(*mem_freq_code = _xlate_freq_code(sep)) &&
 				    !(*mem_freq_value =_xlate_freq_value(sep))){
-					debug("Invalid job GPU memory frequency: %s",
-					      tok);
+					debug("%s: %s: Invalid job GPU memory frequency: %s",
+					      plugin_type, __func__, tok);
 				}
 			} else {
 				debug("%s: %s: Invalid job device frequency type: %s",
@@ -258,7 +264,8 @@ static void _parse_gpu_freq2(char *gpu_freq, unsigned int *gpu_freq_code,
 		} else {
 			if (!(*gpu_freq_code = _xlate_freq_code(tok)) &&
 			    !(*gpu_freq_value = _xlate_freq_value(tok))) {
-				debug("Invalid job GPU frequency: %s", tok);
+				debug("%s: %s: Invalid job GPU frequency: %s",
+				      plugin_type, __func__, tok);
 			}
 		}
 		tok = strtok_r(NULL, ",", &save_ptr);
@@ -317,8 +324,8 @@ static bool _nvml_get_handle(int index, nvmlDevice_t *device)
 	nvmlReturn_t nvml_rc;
 	nvml_rc = nvmlDeviceGetHandleByIndex(index, device);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get device handle for GPU %d: %s", index,
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get device handle for GPU %d: %s",
+		      plugin_type, __func__, index, nvmlErrorString(nvml_rc));
 		return false;
 	}
 	return true;
@@ -350,12 +357,12 @@ static bool _nvml_get_mem_freqs(nvmlDevice_t device,
 	nvml_rc = nvmlDeviceGetSupportedMemoryClocks(device, mem_freqs_size,
 						     mem_freqs);
 	END_TIMER;
-	debug3("nvmlDeviceGetSupportedMemoryClocks() took %ld microseconds",
-	       DELTA_TIMER);
+	debug3("%s: %s: nvmlDeviceGetSupportedMemoryClocks() took %ld microseconds",
+	       plugin_type, __func__, DELTA_TIMER);
 
 	if (nvml_rc != NVML_SUCCESS) {
-		error("%s: Failed to get supported memory frequencies for the "
-		      "GPU : %s", __func__, nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get supported memory frequencies for the GPU : %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		return false;
 	}
 
@@ -364,8 +371,8 @@ static bool _nvml_get_mem_freqs(nvmlDevice_t device,
 
 	if ((*mem_freqs_size > 1) &&
 	    (mem_freqs[0] <= mem_freqs[(*mem_freqs_size)-1])) {
-		error("%s: mem frequencies are not stored in descending order!",
-		      __func__);
+		error("%s: %s: mem frequencies are not stored in descending order!",
+		      plugin_type, __func__);
 		return false;
 	}
 	return true;
@@ -395,11 +402,11 @@ static bool _nvml_get_gfx_freqs(nvmlDevice_t device,
 						       gfx_freqs_size,
 						       gfx_freqs);
 	END_TIMER;
-	debug3("nvmlDeviceGetSupportedGraphicsClocks() took %ld microseconds",
-	       DELTA_TIMER);
+	debug3("%s: %s: took %ld microseconds",
+	       plugin_type, __func__, DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("%s: Failed to get supported graphics frequencies for the"
-		      " GPU at mem frequency %u: %s", __func__, mem_freq,
+		error("%s: %s: Failed to get supported graphics frequencies for the GPU at mem frequency %u: %s",
+		      plugin_type, __func__, mem_freq,
 		      nvmlErrorString(nvml_rc));
 		return false;
 	}
@@ -409,8 +416,8 @@ static bool _nvml_get_gfx_freqs(nvmlDevice_t device,
 
 	if ((*gfx_freqs_size > 1) &&
 	    (gfx_freqs[0] <= gfx_freqs[(*gfx_freqs_size)-1])) {
-		error("%s: gfx frequencies are not stored in descending order!",
-		      __func__);
+		error("%s: %s: gfx frequencies are not stored in descending order!",
+		      plugin_type, __func__);
 		return false;
 	}
 	return true;
@@ -535,15 +542,18 @@ static void _get_nearest_freq(unsigned int *freq, unsigned int freqs_size,
 	unsigned int i;
 
 	if (!freq || !(*freq)) {
-		log_var(log_lvl, "%s: No frequency supplied", __func__);
+		log_var(log_lvl, "%s: %s: No frequency supplied",
+			plugin_type, __func__);
 		return;
 	}
 	if (!freqs || !(*freqs)) {
-		log_var(log_lvl, "%s: No frequency list supplied", __func__);
+		log_var(log_lvl, "%s; %s: No frequency list supplied",
+			plugin_type, __func__);
 		return;
 	}
 	if (freqs_size <= 0) {
-		log_var(log_lvl, "%s: Frequency list is empty", __func__);
+		log_var(log_lvl, "%s: %s: Frequency list is empty",
+			plugin_type, __func__);
 		return;
 	}
 
@@ -551,12 +561,14 @@ static void _get_nearest_freq(unsigned int *freq, unsigned int freqs_size,
 	switch ((*freq)) {
 	case GPU_LOW:
 		*freq = freqs[freqs_size - 1];
-		debug2("Frequency GPU_LOW: %u MHz", *freq);
+		debug2("%s: %s: Frequency GPU_LOW: %u MHz",
+			plugin_type, __func__, *freq);
 		return;
 
 	case GPU_MEDIUM:
 		*freq = freqs[(freqs_size - 1) / 2];
-		debug2("Frequency GPU_MEDIUM: %u MHz", *freq);
+		debug2("%s: %s: Frequency GPU_MEDIUM: %u MHz",
+			plugin_type, __func__, *freq);
 		return;
 
 	case GPU_HIGH_M1:
@@ -564,16 +576,19 @@ static void _get_nearest_freq(unsigned int *freq, unsigned int freqs_size,
 			*freq = freqs[0];
 		else
 			*freq = freqs[1];
-		debug2("Frequency GPU_HIGH_M1: %u MHz", *freq);
+		debug2("%s: %s: Frequency GPU_HIGH_M1: %u MHz",
+			plugin_type, __func__, *freq);
 		return;
 
 	case GPU_HIGH:
 		*freq = freqs[0];
-		debug2("Frequency GPU_HIGH: %u MHz", *freq);
+		debug2("%s: %s: Frequency GPU_HIGH: %u MHz",
+			plugin_type, __func__, *freq);
 		return;
 
 	default:
-		debug2("Freq is not a special case. Continue...");
+		debug2("%s: %s: Freq is not a special case. Continue...",
+		       plugin_type, __func__);
 		break;
 	}
 
@@ -594,7 +609,8 @@ static void _get_nearest_freq(unsigned int *freq, unsigned int freqs_size,
 	for (i = 0; i < freqs_size - 1;) {
 		if (*freq == freqs[i])
 			// No change necessary
-			debug2("No change necessary. Freq: %u MHz", *freq);
+			debug2("%s: %s: No change necessary. Freq: %u MHz",
+			       plugin_type, __func__, *freq);
 			return;
 		i++;
 		/*
@@ -609,8 +625,8 @@ static void _get_nearest_freq(unsigned int *freq, unsigned int freqs_size,
 			return;
 		}
 	}
-	error("%s: Got to the end of the function. This shouldn't happen. Freq:"
-	      " %u MHz", __func__, *freq);
+	error("%s: %s: Got to the end of the function. This shouldn't happen. Freq: %u MHz",
+	      plugin_type, __func__, *freq);
 }
 
 /*
@@ -662,11 +678,11 @@ static bool _nvml_set_freqs(nvmlDevice_t device, unsigned int mem_freq,
 	START_TIMER;
 	nvml_rc = nvmlDeviceSetApplicationsClocks(device, mem_freq, gfx_freq);
 	END_TIMER;
-	debug3("nvmlDeviceSetApplicationsClocks(%u, %u) took %ld microseconds",
-	       mem_freq, gfx_freq, DELTA_TIMER);
+	debug3("%s: %s: nvmlDeviceSetApplicationsClocks(%u, %u) took %ld microseconds",
+	       plugin_type, __func__, mem_freq, gfx_freq, DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("%s: Failed to set memory and graphics clock frequency "
-		      "pair (%u, %u) for the GPU: %s", __func__, mem_freq,
+		error("%s: %s: Failed to set memory and graphics clock frequency pair (%u, %u) for the GPU: %s",
+		      plugin_type, __func__, mem_freq,
 		      gfx_freq, nvmlErrorString(nvml_rc));
 		return false;
 	}
@@ -690,11 +706,11 @@ static bool _nvml_reset_freqs(nvmlDevice_t device)
 	START_TIMER;
 	nvml_rc = nvmlDeviceResetApplicationsClocks(device);
 	END_TIMER;
-	debug3("nvmlDeviceResetApplicationsClocks() took %ld microseconds",
-	       DELTA_TIMER);
+	debug3("%s: %s: nvmlDeviceResetApplicationsClocks() took %ld microseconds",
+	       plugin_type, __func__, DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("%s: Failed to reset GPU frequencies to the hardware default: %s",
-		      __func__, nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to reset GPU frequencies to the hardware default: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		return false;
 	}
 	return true;
@@ -725,17 +741,18 @@ static unsigned int _nvml_get_freq(nvmlDevice_t device, nvmlClockType_t type)
 		type_str = "memory";
 		break;
 	default:
-		error("%s: Unsupported clock type", __func__);
+		error("%s: %s: Unsupported clock type", plugin_type, __func__);
 		break;
 	}
 
 	START_TIMER;
 	nvml_rc = nvmlDeviceGetApplicationsClock(device, type, &freq);
 	END_TIMER;
-	debug3("nvmlDeviceGetApplicationsClock(%s) took %ld microseconds",
-	       type_str, DELTA_TIMER);
+	debug3("%s: %s: nvmlDeviceGetApplicationsClock(%s) took %ld microseconds",
+	       plugin_type, __func__, type_str, DELTA_TIMER);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("%s: Failed to get the GPU %s frequency: %s", __func__,
+		error("%s: %s: Failed to get the GPU %s frequency: %s",
+		      plugin_type, __func__,
 		      type_str, nvmlErrorString(nvml_rc));
 		return 0;
 	}
@@ -801,15 +818,15 @@ static void _reset_freq(bitstr_t *gpus)
 		if (!_nvml_get_handle(i, &device))
 			continue;
 
-		debug2("Memory frequency before reset: %u",
-		       _nvml_get_mem_freq(device));
-		debug2("Graphics frequency before reset: %u",
-		       _nvml_get_gfx_freq(device));
+		debug2("%s: %s: Memory frequency before reset: %u",
+		       plugin_type, __func__, _nvml_get_mem_freq(device));
+		debug2("%s: %s: Graphics frequency before reset: %u",
+		       plugin_type, __func__, _nvml_get_gfx_freq(device));
 		freq_reset =_nvml_reset_freqs(device);
-		debug2("Memory frequency after reset: %u",
-		       _nvml_get_mem_freq(device));
-		debug2("Graphics frequency after reset: %u",
-		       _nvml_get_gfx_freq(device));
+		debug2("%s: %s: Memory frequency after reset: %u",
+		       plugin_type, __func__, _nvml_get_mem_freq(device));
+		debug2("%s: %s: Graphics frequency after reset: %u",
+		       plugin_type, __func__, _nvml_get_gfx_freq(device));
 
 		// TODO: Check to make sure that the frequency reset
 
@@ -823,10 +840,10 @@ static void _reset_freq(bitstr_t *gpus)
 
 	if (count_set != count) {
 		log_var(log_lvl,
-			"%s: Could not reset frequencies for all GPUs. "
-			"Set %d/%d total GPUs", __func__, count_set, count);
-		fprintf(stderr, "Could not reset frequencies for all GPUs. "
-			"Set %d/%d total GPUs\n", count_set, count);
+			"%s: %s: Could not reset frequencies for all GPUs. Set %d/%d total GPUs",
+			plugin_type, __func__, count_set, count);
+		fprintf(stderr, "Could not reset frequencies for all GPUs. Set %d/%d total GPUs\n",
+			count_set, count);
 	}
 }
 
@@ -857,20 +874,22 @@ static void _set_freq(bitstr_t *gpus, char *gpu_freq)
 	/*
 	 * Parse frequency information
 	 */
-	debug2("_parse_gpu_freq(%s)", gpu_freq);
+	debug2("%s: %s: _parse_gpu_freq(%s)", plugin_type, __func__, gpu_freq);
 	_parse_gpu_freq(gpu_freq, &gpu_freq_num, &mem_freq_num, &verbose_flag);
 	if (verbose_flag)
-		debug2("verbose_flag ON");
+		debug2("%s: %s: verbose_flag ON", plugin_type, __func__);
 
 	tmp = _freq_value_to_string(mem_freq_num);
-	debug2("Requested GPU memory frequency: %s", tmp);
+	debug2("%s: %s: Requested GPU memory frequency: %s", plugin_type,
+	       __func__, tmp);
 	xfree(tmp);
 	tmp = _freq_value_to_string(gpu_freq_num);
-	debug2("Requested GPU graphics frequency: %s", tmp);
+	debug2("%s: %s: Requested GPU graphics frequency: %s", plugin_type,
+	       __func__, tmp);
 	xfree(tmp);
 
 	if (!mem_freq_num || !gpu_freq_num) {
-		debug2("%s: No frequencies to set", __func__);
+		debug2("%s: %s: No frequencies to set", plugin_type, __func__);
 		return;
 	}
 
@@ -891,12 +910,12 @@ static void _set_freq(bitstr_t *gpus, char *gpu_freq)
 	if (constrained_devices && task_cgroup) {
 		cgroups_active = true;
 		gpu_len = bit_set_count(gpus);
-		debug2("%s: cgroups are configured. Using LOCAL GPU IDs",
-		       __func__);
+		debug2("%s: %s: cgroups are configured. Using LOCAL GPU IDs",
+		       plugin_type, __func__);
 	} else {
-	 	gpu_len = bit_size(gpus);
-		debug2("%s: cgroups are NOT configured. Assuming GLOBAL GPU IDs",
-		       __func__);
+		gpu_len = bit_size(gpus);
+		debug2("%s: %s: cgroups are NOT configured. Assuming GLOBAL GPU IDs",
+		       plugin_type, __func__);
 	}
 
 	/*
@@ -908,25 +927,27 @@ static void _set_freq(bitstr_t *gpus, char *gpu_freq)
 
 		// Only check the global GPU bitstring if not using cgroups
 		if (!cgroups_active && !bit_test(gpus, i)) {
-			debug2("Passing over NVML device %u", i);
+			debug2("%s: %s: Passing over NVML device %u",
+			       plugin_type, __func__, i);
 			continue;
 		}
 		count++;
 
 		if (!_nvml_get_handle(i, &device))
 			continue;
-		debug2("Setting frequency of NVML device %u", i);
+		debug2("%s: %s: Setting frequency of NVML device %u",
+		       plugin_type, __func__, i);
 		_nvml_get_nearest_freqs(device, &mem_freq_num, &gpu_freq_num);
 
-		debug2("Memory frequency before set: %u",
-		       _nvml_get_mem_freq(device));
-		debug2("Graphics frequency before set: %u",
-		       _nvml_get_gfx_freq(device));
+		debug2("%s: %s: Memory frequency before set: %u",
+		       plugin_type, __func__, _nvml_get_mem_freq(device));
+		debug2("%s: %s: Graphics frequency before set: %u",
+		       plugin_type, __func__, _nvml_get_gfx_freq(device));
 		freq_set = _nvml_set_freqs(device, mem_freq_num, gpu_freq_num);
-		debug2("Memory frequency after set: %u",
-		       _nvml_get_mem_freq(device));
-		debug2("Graphics frequency after set: %u",
-		       _nvml_get_gfx_freq(device));
+		debug2("%s: %s: Memory frequency after set: %u",
+		       plugin_type, __func__, _nvml_get_mem_freq(device));
+		debug2("%s: %s: Graphics frequency after set: %u",
+		       plugin_type, __func__, _nvml_get_gfx_freq(device));
 
 		if (mem_freq_num) {
 			xstrfmtcat(tmp, "%smemory_freq:%u", sep, mem_freq_num);
@@ -968,8 +989,8 @@ static void _nvml_get_driver(char *driver, unsigned int len)
 {
 	nvmlReturn_t nvml_rc = nvmlSystemGetDriverVersion(driver, len);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get the version of the system's graphics"
-		      "driver: %s", nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get the version of the system's graphics driver: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		driver[0] = '\0';
 	}
 }
@@ -981,8 +1002,8 @@ static void _nvml_get_version(char *version, unsigned int len)
 {
 	nvmlReturn_t nvml_rc = nvmlSystemGetNVMLVersion(version, len);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get the version of the system's graphics"
-		      "version: %s", nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get the version of the system's graphics version: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		version[0] = '\0';
 	}
 }
@@ -994,8 +1015,8 @@ static void _nvml_get_device_count(unsigned int *device_count)
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetCount(device_count);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get device count: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get device count: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		*device_count = 0;
 	}
 }
@@ -1021,8 +1042,8 @@ static void _nvml_get_device_name(nvmlDevice_t device, char *device_name,
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetName(device, device_name, size);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get name of the GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get name of the GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	}
 	_underscorify_tolower(device_name);
 }
@@ -1037,11 +1058,12 @@ static char *_nvml_get_device_brand(nvmlDevice_t device)
 	char *device_brand = NULL;
 	nvmlReturn_t nvml_rc = nvmlDeviceGetBrand(device, &brand);
 	if (nvml_rc == NVML_ERROR_INVALID_ARGUMENT) {
-		debug3("NVML: Device is invalid or brand type is null");
+		debug3("%s: %s: Device is invalid or brand type is null",
+		       plugin_type, __func__);
 		return NULL;
 	} else if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get brand/type of the GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get brand/type of the GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		return NULL;
 	}
 
@@ -1087,8 +1109,8 @@ static void _nvml_get_device_uuid(nvmlDevice_t device, char *uuid,
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetUUID(device, uuid, len);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get UUID of GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get UUID of GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	}
 }
 
@@ -1099,8 +1121,8 @@ static void _nvml_get_device_pci_info(nvmlDevice_t device, nvmlPciInfo_t *pci)
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetPciInfo(device, pci);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get PCI info of GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get PCI info of GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	}
 }
 
@@ -1114,8 +1136,8 @@ static void _nvml_get_device_minor_number(nvmlDevice_t device,
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetMinorNumber(device, minor);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get minor number of GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get minor number of GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	}
 }
 
@@ -1134,8 +1156,8 @@ static void _nvml_get_device_affinity(nvmlDevice_t device, unsigned int size,
 {
 	nvmlReturn_t nvml_rc = nvmlDeviceGetCpuAffinity(device, size, cpu_set);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get cpu affinity of GPU: %s",
-		      nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get cpu affinity of GPU: %s",
+		      plugin_type, __func__, nvmlErrorString(nvml_rc));
 	}
 }
 
@@ -1158,8 +1180,8 @@ static char *_nvml_get_nvlink_remote_pcie(nvmlDevice_t device,
 	memset(&pci_info, 0, sizeof(pci_info));
 	nvml_rc = nvmlDeviceGetNvLinkRemotePciInfo(device, lane, &pci_info);
 	if (nvml_rc != NVML_SUCCESS) {
-		error("NVML: Failed to get PCI info of endpoint device for lane"
-		      " %d: %s", lane, nvmlErrorString(nvml_rc));
+		error("%s: %s: Failed to get PCI info of endpoint device for lane %d: %s",
+		      plugin_type, __func__, lane, nvmlErrorString(nvml_rc));
 		return xstrdup("");
 	} else {
 		return xstrdup(pci_info.busId);
@@ -1214,21 +1236,23 @@ static char *_nvml_get_nvlink_info(nvmlDevice_t device, int index,
 	for (i = 0; i < NVML_NVLINK_MAX_LINKS; ++i) {
 		nvml_rc = nvmlDeviceGetNvLinkState(device, i, &is_active);
 		if (nvml_rc == NVML_ERROR_INVALID_ARGUMENT) {
-			debug3("NVML: Device/lane %d is invalid", i);
+			debug3("%s: %s: Device/lane %d is invalid",
+			       plugin_type, __func__, i);
 			continue;
 		} else if (nvml_rc == NVML_ERROR_NOT_SUPPORTED) {
-			debug3("NVML: Device %d does not support "
-			       "nvmlDeviceGetNvLinkState()", i);
+			debug3("%s: %s: Device %d does not support nvmlDeviceGetNvLinkState()",
+			       plugin_type, __func__, i);
 			break;
 		} else if (nvml_rc != NVML_SUCCESS) {
-			error("NVML: Failed to get nvlink info from GPU: %s",
-			      nvmlErrorString(nvml_rc));
+			error("%s: %s: Failed to get nvlink info from GPU: %s",
+			      plugin_type, __func__, nvmlErrorString(nvml_rc));
 		}
 		// See if nvlink lane is active
 		if (is_active == NVML_FEATURE_ENABLED) {
 			char *busid;
 			int k;
-			debug3("NVML: nvlink %d is enabled", i);
+			debug3("%s: %s: nvlink %d is enabled",
+			       plugin_type, __func__,i);
 
 			/*
 			 * Count link endpoints to determine single and double
@@ -1244,7 +1268,8 @@ static char *_nvml_get_nvlink_info(nvmlDevice_t device, int index,
 			}
 			xfree(busid);
 		} else
-			debug3("NVML: nvlink %d is disabled", i);
+			debug3("%s: %s: nvlink %d is disabled",
+			       plugin_type, __func__, i);
 	}
 
 	// Convert links to comma separated string
@@ -1283,16 +1308,20 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 	_nvml_init();
 	_nvml_get_driver(driver, NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE);
 	_nvml_get_version(version, NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE);
-	debug("Systems Graphics Driver Version: %s", driver);
-	debug("NVML Library Version: %s", version);
+	debug("%s: %s: Systems Graphics Driver Version: %s",
+		plugin_type, __func__, driver);
+	debug("%s: %s: NVML Library Version: %s",
+	      plugin_type, __func__, version);
 
 	_nvml_get_device_count(&device_count);
 
-	debug2("MAX_CPUS: %d", MAX_CPUS);
-	debug2("CPU_SET_SIZE (# of ulongs needed to hold MAX_CPUS bits): %lu",
-	       CPU_SET_SIZE);
-	debug2("Total CPU count: %d", node_config->cpu_cnt);
-	debug2("Device count: %d", device_count);
+	debug2("%s: %s: MAX_CPUS: %d", plugin_type, __func__, MAX_CPUS);
+	debug2("%s: %s: CPU_SET_SIZE (# of ulongs needed to hold MAX_CPUS bits): %lu",
+	       plugin_type, __func__, CPU_SET_SIZE);
+	debug2("%s: %s: Total CPU count: %d",
+	       plugin_type, __func__, node_config->cpu_cnt);
+	debug2("%s: %s: Device count: %d",
+	       plugin_type, __func__, device_count);
 
 	// Create a device index --> PCI Bus ID lookup table
 	device_lut = xmalloc(sizeof(char *) * device_count);
@@ -1328,7 +1357,8 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 		char *device_brand = NULL;
 
 		if (!_nvml_get_handle(i, &device)) {
-			error("Creating null GRES GPU record");
+			error("%s: %s: Creating null GRES GPU record",
+			      plugin_type, __func__);
 			add_gres_to_list(gres_list_system, "gpu", 1,
 					 node_config->cpu_cnt, NULL,
 					 NULL, NULL, NULL);
@@ -1355,7 +1385,8 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 		// Convert cpu range str from machine to abstract(slurm) format
 		if (node_config->xcpuinfo_mac_to_abs(cpu_aff_mac_range,
 						     &cpu_aff_abs_range)) {
-			error("    Conversion from machine to abstract failed");
+			error("    %s: %s: Conversion from machine to abstract failed",
+			      plugin_type, __func__);
 			xfree(cpu_aff_mac_range);
 			continue;
 		}
@@ -1365,20 +1396,28 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 		device_brand = _nvml_get_device_brand(device);
 		xstrfmtcat(device_file, "/dev/nvidia%u", minor_number);
 
-		debug2("GPU index %u:", i);
-		debug2("    Name: %s", device_name);
-		debug2("    Brand/Type: %s", device_brand);
-		debug2("    UUID: %s", uuid);
-		debug2("    PCI Domain/Bus/Device: %u:%u:%u", pci_info.domain,
-		       pci_info.bus, pci_info.device);
-		debug2("    PCI Bus ID: %s", pci_info.busId);
-		debug2("    NVLinks: %s", nvlinks);
-		debug2("    Device File (minor number): %s", device_file);
+		debug2("%s: %s: GPU index %u:", plugin_type, __func__, i);
+		debug2("%s: %s:     Name: %s",
+		       plugin_type, __func__, device_name);
+		debug2("%s: %s:     Brand/Type: %s",
+		       plugin_type, __func__, device_brand);
+		debug2("%s: %s:     UUID: %s", plugin_type, __func__, uuid);
+		debug2("%s: %s:     PCI Domain/Bus/Device: %u:%u:%u",
+		       plugin_type, __func__, pci_info.domain, pci_info.bus,
+		       pci_info.device);
+		debug2("%s: %s:     PCI Bus ID: %s",
+		       plugin_type, __func__, pci_info.busId);
+		debug2("%s: %s:     NVLinks: %s",
+		       plugin_type, __func__, nvlinks);
+		debug2("%s: %s:     Device File (minor number): %s",
+		       plugin_type, __func__, device_file);
 		if (minor_number != i)
-			debug("Note: GPU index %u is different from minor "
-			      "number %u", i, minor_number);
-		debug2("    CPU Affinity Range: %s", cpu_aff_mac_range);
-		debug2("    CPU Affinity Range Abstract: %s",cpu_aff_abs_range);
+			debug("%s: %s: Note: GPU index %u is different from minor number %u",
+			      plugin_type, __func__, i, minor_number);
+		debug2("%s: %s:     CPU Affinity Range: %s",
+		       plugin_type, __func__, cpu_aff_mac_range);
+		debug2("%s: %s:     CPU Affinity Range Abstract: %s",
+		       plugin_type, __func__, cpu_aff_abs_range);
 		// Print out possible memory frequencies for this device
 		_nvml_print_freqs(device, LOG_LEVEL_DEBUG2);
 
@@ -1401,13 +1440,14 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 	xfree(device_lut);
 	_nvml_shutdown();
 
-	info("%u GPU system device(s) detected", device_count);
+	info("%s: %s: %u GPU system device(s) detected",
+	     plugin_type, __func__, device_count);
 	return gres_list_system;
 }
 
 extern int init(void)
 {
-	debug("%s: %s loaded", __func__, plugin_name);
+	debug("%s: %s loaded", plugin_type, plugin_name);
 
 	if (slurm_get_debug_flags() & DEBUG_FLAG_GRES)
 		log_lvl = LOG_LEVEL_INFO;
@@ -1417,7 +1457,7 @@ extern int init(void)
 
 extern int fini(void)
 {
-	debug("%s: unloading %s", __func__, plugin_name);
+	debug("%s: %s unloading", plugin_type, plugin_name);
 
 	return SLURM_SUCCESS;
 }
@@ -1438,7 +1478,8 @@ extern List gpu_p_get_system_gpu_list(node_config_load_t *node_config)
 	List gres_list_system = NULL;
 
 	if (!(gres_list_system = _get_system_gpu_list_nvml(node_config)))
-		error("System GPU detection failed");
+		error("%s: %s: System GPU detection failed",
+		      plugin_type, __func__);
 
 	return gres_list_system;
 }
@@ -1490,15 +1531,16 @@ extern char *gpu_p_test_cpu_conv(char *cpu_range)
 	bitstr_t *cpu_aff_mac_bitstr;
 	int i;
 	char *result;
-	info("%s: cpu_range: %s", __func__, cpu_range);
+	info("%s: %s: cpu_range: %s", plugin_type, __func__, cpu_range);
 
 	if (!cpu_range) {
-		error("cpu_range is null");
+		error("%s: %s: cpu_range is null", plugin_type, __func__);
 		return xstrdup("");
 	}
 
 	if (cpu_range[0] != '~') {
-		error("cpu_range doesn't start with `~`!");
+		error("%s: %s: cpu_range doesn't start with `~`!",
+		      plugin_type, __func__);
 		return xstrdup("");
 	}
 
@@ -1532,7 +1574,7 @@ extern char *gpu_p_test_cpu_conv(char *cpu_range)
 			cpu_set[i] = 0;
 		}
 	} else {
-		error("Unknown test keyword");
+		error("%s: %s: Unknown test keyword", plugin_type, __func__);
 		return xstrdup("");
 	}
 
