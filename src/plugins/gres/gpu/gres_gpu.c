@@ -146,11 +146,28 @@ static int _match_gres(gres_slurmd_conf_t *conf_gres,
 {
 	/*
 	 * If the config gres has a type check it with what is found on the
-	 * system.
+	 * system. If the name found on the system is longer, but beginning of
+	 * the type match, overwrite with shorter version.
 	 */
 	if (conf_gres->type_name &&
-	    xstrcmp(conf_gres->type_name, sys_gres->type_name))
+	    xstrncmp(conf_gres->type_name, sys_gres->type_name,
+	    strlen(conf_gres->type_name))) {
 		return 0;
+	}
+	xfree(sys_gres->type_name);
+	sys_gres->type_name = xstrdup(conf_gres->type_name);
+
+	/*
+	 * If the config gres has a type check it with what is found on the
+	 * system. If the name found on the system is longer, but beginning of
+	 * the type match, overwrite with shorter version.
+	 */
+	if (conf_gres->type_name &&
+	    xstrncmp(conf_gres->type_name, sys_gres->type_name,
+		     strlen(conf_gres->type_name))) {
+		sys_gres->type_name = xstrdup(conf_gres->type_name);
+		return 0;
+	}
 
 	/*
 	 * If the config gres has a file check it with what is found on the

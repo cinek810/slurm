@@ -40,6 +40,7 @@
 #include "src/common/gres.h"
 #include "src/common/log.h"
 #include "src/common/list.h"
+#include "ctype.h"
 
 #include <nvml.h>
 
@@ -1370,13 +1371,23 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 
 		debug2("%s: %s: GPU index %u:", plugin_type, __func__, i);
 		debug2("%s: %s:     Name: %s", plugin_type, __func__, device_name);
-		debug2("%s: %s:     Brand/Type: %s", plugin_type, __func__, device_brand);
+		for (int i=0; device_name[i]; i++) {
+			device_name[i]=tolower(device_name[i]);
+			if (device_name[i] == ' ')
+				device_name[i]='_';
+		}
+		debug2("%s: %s:     Gres type: %s", plugin_type, __func__,
+		       device_name);
+		debug2("%s: %s:     Brand/Type: %s", plugin_type, __func__,
+		       device_brand);
 		debug2("%s: %s:     UUID: %s", plugin_type, __func__, uuid);
 		debug2("%s: %s:     PCI Domain/Bus/Device: %u:%u:%u",
 		       plugin_type, __func__, pci_info.domain, pci_info.bus,
 		       pci_info.device);
-		debug2("%s: %s:     PCI Bus ID: %s", plugin_type, __func__, pci_info.busId);
-		debug2("%s: %s:     NVLinks: %s", plugin_type, __func__, nvlinks);
+		debug2("%s: %s:     PCI Bus ID: %s", plugin_type, __func__,
+		       pci_info.busId);
+		debug2("%s: %s:     NVLinks: %s", plugin_type, __func__,
+		       nvlinks);
 		debug2("%s: %s:     Device File (minor number): %s",
 		       plugin_type, __func__, device_file);
 		if (minor_number != i)
@@ -1391,7 +1402,7 @@ static List _get_system_gpu_list_nvml(node_config_load_t *node_config)
 
 		add_gres_to_list(gres_list_system, "gpu", 1,
 				 node_config->cpu_cnt, cpu_aff_abs_range,
-				 device_file, device_brand, nvlinks);
+				 device_file, device_name, nvlinks);
 
 		xfree(cpu_aff_mac_range);
 		xfree(cpu_aff_abs_range);

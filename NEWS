@@ -42,6 +42,8 @@ documents those changes that are of interest to users and administrators.
  -- Add UsageFactorSafe QOS flag to control applying UsageFactor at
     submission/scheduling time.
  -- Create missing reservations on DBD_MODIFY_RESV.
+ -- Change GRES type set by gpu/gpu_nvml plugin to be more specific - based
+    on NVIDIA device name.
 
 * Changes in Slurm 19.05.0
 ==========================
