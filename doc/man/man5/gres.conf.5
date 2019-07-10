@@ -65,6 +65,10 @@ Comma separated list of the types of GRES to auto detect.  Valid options are
 .\" Escape `'` at the beginning of a line
 \'nvml'.  This is needed to use any outside system to configure GRES.
 
+In case of  \fBFastSchedule=1\fR values in \fIgres.conf\fR have to match those
+detected automatically. If \fBFastSchedule=2\fR configuration in
+\fIgres.conf\fR is used instead of values detected automatically.
+
 .TP
 \fBCount\fR
 Number of resources of this type available on this node.
@@ -215,6 +219,11 @@ An optional arbitrary string identifying the type of device.
 For example, this might be used to identify a specific model of GPU, which users
 can then specify in a job request.
 If \fBType\fR is specified, then \fBCount\fR is limited in size (currently 1024).
+
+If \fBAutoDetect\fR is enabled and \fBFastSchedule=1\fR is configured Type
+doesn't have to full match value returned by AutoDetect plugin, if configured
+value matches beginning of the name retrieved from operating system then it's
+treated as match and value configured in \fIgres.conf\fR is used.
 
 .SH "EXAMPLES"
 .LP
