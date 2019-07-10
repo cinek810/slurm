@@ -140,10 +140,15 @@ static void _set_env(char ***env_ptr, void *gres_ptr, int node_inx,
 	}
 }
 
-/* Check a gres.conf gres to one we found on the system */
+/*
+ * Check a gres.conf gres to one we found on the system
+ * This function should only be used when FastSchedule==2
+ * */
+
 static int _match_gres(gres_slurmd_conf_t *conf_gres,
 		       gres_slurmd_conf_t *sys_gres)
 {
+	//xassert(slurm_get_fast_schedule() == 2);
 	/*
 	 * If the config gres has a type check it with what is found on the
 	 * system. If the name found on the system is longer, but beginning of
@@ -156,18 +161,6 @@ static int _match_gres(gres_slurmd_conf_t *conf_gres,
 	}
 	xfree(sys_gres->type_name);
 	sys_gres->type_name = xstrdup(conf_gres->type_name);
-
-	/*
-	 * If the config gres has a type check it with what is found on the
-	 * system. If the name found on the system is longer, but beginning of
-	 * the type match, overwrite with shorter version.
-	 */
-	if (conf_gres->type_name &&
-	    xstrncmp(conf_gres->type_name, sys_gres->type_name,
-		     strlen(conf_gres->type_name))) {
-		sys_gres->type_name = xstrdup(conf_gres->type_name);
-		return 0;
-	}
 
 	/*
 	 * If the config gres has a file check it with what is found on the
