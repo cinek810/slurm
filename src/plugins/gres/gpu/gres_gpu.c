@@ -205,40 +205,49 @@ extern int _find_type_in_gres_list(void *x, void *key)
  * NOTE: gres_list_system will be sorted in descending order by type_name
  * length, and gres_list_conf will have its items mangled (count).
  */
-static void _sync_gres_types(List gres_list_system, List gres_list_conf)
+static void _sync_gres_types(List gres_list_system, List gres_list_conf_single)
 {
-	gres_slurmd_conf_t *sys_gres, *conf_gres;
+	gres_slurmd_conf_t *sys_gres, *conf_found;
 	ListIterator itr;
 
 	/*
 	 * Sort conf and sys gres lists by longest GRES type to shortest, so we
 	 * can avoid issues if e.g. `k20m` and `k20m1` are both specified.
 	 */
-	list_sort(gres_list_conf, _sort_gpu_by_type_name);
+	list_sort(gres_list_conf_single, _sort_gpu_by_type_name);
 	list_sort(gres_list_system, _sort_gpu_by_type_name);
 
 	/* Only match devices if the conf gres count isn't exceeded */
 	itr = list_iterator_create(gres_list_system);
 	while ((sys_gres = list_next(itr))) {
-		conf_gres = list_find_first(gres_list_conf,
+		conf_found = list_find_first(gres_list_conf_single,
 					    _find_type_in_gres_list,
 					    sys_gres->type_name);
-		if (!conf_gres) {
-			debug("Could not find a configuration record with a GRES type substring that matches system device `%s`. Setting system GRES type to NULL",
-			      sys_gres->type_name);
+		/*
+		 * This function should be called on list where count is
+		 * normalized to 1. Since this is what we should get from
+		 * gpu_g_get_system_gpu_list as gres_list_system.
+		 */
+		xassert(conf_found->count==1);
+		if (!conf_found) {
+			/*
+			 * Setting sys_gres->type_name tu NULL will result in
+			 * the device being skipped
+			 */
+			error("%s: %s: Could not find a configuration record with a GRES type substring that matches system device `%s`. Setting system GRES type to NULL. This may impact your TRES configuration.",
+			      plugin_type, __func__, sys_gres->type_name);
 			xfree(sys_gres->type_name);
-			continue;
-		} else if (conf_gres->count <= 0) {
-			debug("System device `%s` exceeds the configured count for GRES type `%s`. Setting GRES type to NULL",
-			      sys_gres->type_name, conf_gres->type_name);
+		}  else {
+			/*
+			 * Overwrite sys_gres type name to match conf_found
+			 * This will result in configured value being used in
+			 * case of FastSchedule==0
+			 */
+			debug("%s: %s: Normalizing system GRES type:%s, to configured value:%s",
+			      plugin_type, __func__,
+			      sys_gres->type_name,conf_found->type_name);
 			xfree(sys_gres->type_name);
-			continue;
-		} else {
-			/* Overwrite sys_gres type name to match conf_gres */
-			xfree(sys_gres->type_name);
-			sys_gres->type_name = xstrdup(conf_gres->type_name);
-			/* Avoid matching more system devices than configured */
-			conf_gres->count--;
+			sys_gres->type_name = xstrdup(conf_found->type_name);
 		}
 	}
 	list_iterator_destroy(itr);
@@ -416,7 +425,7 @@ static void _normalize_gres_conf(List gres_list_conf, List gres_list_system)
 	 * If conf GRES type matches matches a substring in sys GRES type, then
 	 * overwrite sys GRES type with conf GRES type
 	 */
-	_sync_gres_types(gres_list_system, gres_list_conf);
+	_sync_gres_types(gres_list_system, gres_list_conf_single);
 
 	if (fast_schedule == 0) {
 		debug2("FastSchedule == 0, we are only delivering GPUs found on the system, ignoring those defined in gres.conf");
@@ -446,6 +455,7 @@ static void _normalize_gres_conf(List gres_list_conf, List gres_list_system)
 			if (!sys_record) {
 				error("This GPU record was in gres.conf, but not found on the system.");
 				print_gres_conf(gres_record, LOG_LEVEL_ERROR);
+				//drain_node?
 			}
 			destroy_gres_slurmd_conf(gres_record);
 		}
@@ -453,6 +463,7 @@ static void _normalize_gres_conf(List gres_list_conf, List gres_list_system)
 		if (list_count(gres_list_system) > 0) {
 			error("These GPUs were found on the system, but are being ignored because they were not configured in gres.conf:");
 			print_gres_list(gres_list_system, LOG_LEVEL_ERROR);
+			//drain_node?
 
 		}
 
