@@ -60,6 +60,8 @@ def main(argv=None):
                       help='comma or space separated string of tests to include')
     parser.add_option('-k', '--keep-logs', action='store_true', default=False)
     parser.add_option('-s', '--stop-on-first-fail', action='store_true', default=False)
+    parser.add_option('-S', '--start-at-test', type='string', dest='start_at_test',
+                      action='callback', callback=test_parser)
     (options, args) = parser.parse_args(args=argv)
 
     # Sanity check
@@ -91,49 +93,59 @@ def main(argv=None):
         return -1
     tests.sort(test_cmp)
 
+
     # Now run the tests
     start_time = time.time()
     print >>sys.stdout, 'Started:', time.asctime(time.localtime(start_time))
     sys.stdout.flush()
     for test in tests:
-        sys.stdout.write('Running test %d.%d ' % (test[0],test[1]))
-        sys.stdout.flush()
-        testlog_name = 'test%d.%d.log' % (test[0],test[1])
-        try:
-            os.remove(testlog_name+'.failed')
-        except:
-            pass
-        testlog = file(testlog_name, 'w+')
-
-        if options.time_individual:
-            t1 = time.time()
-        retcode = Popen(('expect', test[2]), shell=False,
-                        stdout=testlog, stderr=testlog).wait()
-        if options.time_individual:
-            t2 = time.time()
-            minutes = int(t2-t1)/60
-            seconds = (t2-t1)%60
-            if minutes > 0:
-                sys.stdout.write('%d min '%(minutes))
-            sys.stdout.write('%.2f sec '%(seconds))
-
-        testlog.close()
-        if retcode == 0:
-            passed_tests.append(test)
-            sys.stdout.write('\n')
-            if not options.keep_logs:
-                try:
-                    os.remove(testlog_name)
-                except IOError as e:
-                    print >> sys.stderr, 'ERROR failed to close %s %s' \
-                        % (testlog_name, e)
+        if options.start_at_test is not None: 
+            start=options.start_at_test[0]
         else:
-            failed_tests.append(test)
-            os.rename(testlog_name, testlog_name+'.failed')
-            sys.stdout.write('FAILED!\n')
-            if options.stop_on_first_fail:
-                break
-        sys.stdout.flush()
+            start=(1,1)
+
+        if start[0] > test[0] or (start[0] == test[0] and start[1] > test[1]):
+            sys.stdout.write("Skipping test %d.%d due to --start-at-task %d.%d \n"
+                             % (test[0],test[1],start[0],start[1]))
+        else:
+            sys.stdout.write('Running test %d.%d ' % (test[0],test[1]))
+            sys.stdout.flush()
+            testlog_name = 'test%d.%d.log' % (test[0],test[1])
+            try:
+                os.remove(testlog_name+'.failed')
+            except:
+                pass
+            testlog = file(testlog_name, 'w+')
+
+            if options.time_individual:
+                t1 = time.time()
+            retcode = Popen(('expect', test[2]), shell=False,
+                            stdout=testlog, stderr=testlog).wait()
+            if options.time_individual:
+                t2 = time.time()
+                minutes = int(t2-t1)/60
+                seconds = (t2-t1)%60
+                if minutes > 0:
+                    sys.stdout.write('%d min '%(minutes))
+                sys.stdout.write('%.2f sec '%(seconds))
+
+            testlog.close()
+            if retcode == 0:
+                passed_tests.append(test)
+                sys.stdout.write('\n')
+                if not options.keep_logs:
+                    try:
+                        os.remove(testlog_name)
+                    except IOError as e:
+                        print >> sys.stderr, 'ERROR failed to close %s %s' \
+                            % (testlog_name, e)
+            else:
+                failed_tests.append(test)
+                os.rename(testlog_name, testlog_name+'.failed')
+                sys.stdout.write('FAILED!\n')
+                if options.stop_on_first_fail:
+                    break
+            sys.stdout.flush()
 
     end_time = time.time()
     print >>sys.stdout, 'Ended:', time.asctime(time.localtime(end_time))
