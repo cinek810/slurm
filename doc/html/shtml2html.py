@@ -4,6 +4,7 @@ import re
 import sys
 import os
 import codecs
+import subprocess
 
 canonical_url = 'https://slurm.schedmd.com/'
 
@@ -15,6 +16,9 @@ canonical_regex = re.compile(canonical_pat)
 
 page_title_pat = r'(<!--\s*#pagetitle\s*-->)'
 page_title_regex = re.compile(page_title_pat)
+
+last_modified_pat = r'(<!--\s#lastmodified\s-->)'
+last_modified_regex = re.compile(last_modified_pat)
 
 url_pat = r'(\s+href\s*=\s*")([^"#]+)(#[^"]+)?(")'
 url_regex = re.compile(url_pat)
@@ -98,12 +102,18 @@ for filename in files:
             break
 
     shtml.seek(0)
+
+#TODO: for some reason shell=False version returns "unknown date format"??
+#    last_modified_date = subprocess.check_output(['git','log','-n','1','--date="format:%d %B %Y"','--pretty="%cd"','--',filename]).strip()
+    last_modified_date = subprocess.check_output('LC_ALL=C git log -n1 --date="format:%d %B %Y" --pretty="%cd" -- '+filename,shell=True).strip()
+
     for line in shtml.readlines():
         line = include_regex.sub(include_virtual, line)
         line = page_title_regex.sub(page_title_rewrite, line)
         line = version_regex.sub(version_rewrite, line)
         line = canonical_regex.sub(canonical_rewrite, line)
         line = url_regex.sub(url_rewrite, line)
+        line = last_modified_regex.sub(last_modified_date,line)
         html.write(line)
 
 

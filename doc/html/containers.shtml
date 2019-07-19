@@ -108,6 +108,6 @@ to provide HPC containers with full scheduler integration.
 
 <hr size=4 width="100%">
 
-<p style="text-align:center;">Last modified November 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

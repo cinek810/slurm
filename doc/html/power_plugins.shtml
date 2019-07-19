@@ -89,6 +89,6 @@ Called by the slurmctld daemon.
 (input) pointer to the job record being started.
 
 
-<p style="text-align:center;">Last modified 27 March 2015</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

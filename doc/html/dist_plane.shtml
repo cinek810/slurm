@@ -130,6 +130,6 @@ following allocation of the task ids:
 </center>
 
 
-<p style="text-align:center;">Last modified 27 October 2017</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

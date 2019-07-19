@@ -137,6 +137,6 @@ to indicate the reason for failure.</p>
 especially the value of the DebugFlags with respect to JobContainer.</p>
 
 
-<p style="text-align:center;">Last modified 22 April 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

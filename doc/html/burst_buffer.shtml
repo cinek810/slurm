@@ -366,6 +366,6 @@ The second job can be made to wait for the first job's stage out operation to
 complete using the "afterburstbuffer" dependency option (e.g.
 "sbatch --dependency=afterburstbuffer:123 ...").</p>
 
-<p style="text-align:center;">Last modified 10 June 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

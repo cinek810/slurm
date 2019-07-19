@@ -162,6 +162,6 @@ and set errno appropriately to indicate the cause of the failure. If the functio
 fails, no assumptions are made about the state of the credential except its suitability
 for destruction via <span class="commandline">slurm_auth_destroy()</span>.</p>
 
-<p style="text-align:center;">Last modified 7 March 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

@@ -56,6 +56,6 @@ appropriate RPM.</li>
 repository.</li>
 </ol>
 
-<p style="text-align:center;">Last modified 27 February 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

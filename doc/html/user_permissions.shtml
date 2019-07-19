@@ -40,6 +40,6 @@ which they can serve as coordinators.
 For configuration information, see the
 <a href="sacctmgr.html">sacctmgr</a> man page.</p>
 
-<p style="text-align:center;">Last modified 22 September 2015</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

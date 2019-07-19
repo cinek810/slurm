@@ -348,6 +348,6 @@ correlate activity with other sources such as logs.</DD></DT>
 
 
 
-<p style="text-align:center;">Last modified 1 July 2013</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

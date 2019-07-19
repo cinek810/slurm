@@ -131,6 +131,6 @@ command.</p>
 <p style="margin-left:.2in"><b>Returns</b>: A string containing configuration
 information. The return value is released using the <i>xfree()</i> function.</p>
 
-<p style="text-align:center;">Last modified 7 March 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

@@ -113,6 +113,6 @@ in the hierarchy is separated by a period. The final element will always be
 SLURM_ERROR on failure.</p>
 
 
-<p style="text-align:center;">Last modified 27 March 2015</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

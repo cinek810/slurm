@@ -121,7 +121,7 @@ plugin and the frequency at which to gather node energy data.</p>
 </dl>
 
 
-<p style="text-align:center;">Last modified 27 March 2015</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->
 

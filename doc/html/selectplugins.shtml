@@ -674,6 +674,6 @@ Only used by Cray ALPS at present.
 elements in each dimension of the system size.</p>
 
 
-<p style="text-align:center;">Last modified 14 June 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

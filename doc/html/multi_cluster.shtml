@@ -59,6 +59,6 @@ option will become active for all of the clusters listed by the
 See also the <a href="federation.html">Slurm Federated Scheduling Guide<a/>.
 </p>
 
-<p style="text-align:center;">Last modified 16 April 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

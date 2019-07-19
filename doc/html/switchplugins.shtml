@@ -584,6 +584,6 @@ structure representing the slurmstepd's view of the job step.</p>
 <p style="margin-left:.2in"><b>Returns</b>: SLURM_SUCCESS if the job step has been resumed and SLURM_ERROR otherwise.</p>
 
 
-<p style="text-align:center;">Last modified 7 March 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

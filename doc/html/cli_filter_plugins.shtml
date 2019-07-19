@@ -158,6 +158,6 @@ storing data for communication between pre_submit() and post_submit().<br>
 <span class="commandline">stepid</span>
 (input) step id of the job if appropriate, NO_VAL otherwise<br>
 
-<p style="text-align:center;">Last modified 29 April 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

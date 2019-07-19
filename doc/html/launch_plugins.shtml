@@ -144,6 +144,6 @@ The system <span class="commandline">_init()</span> is called before the Slurm
   <span class="commandline"> signal:</span> the signal that needs to be sent.
 
 
-<p style="text-align:center;">Last modified 14 June 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

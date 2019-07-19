@@ -236,6 +236,6 @@ to be distributed over 9 nodes or 184 watts per node.</p>
 </li>
 </ul>
 
-<p style="text-align:center;">Last modified 7 Mar 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

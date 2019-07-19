@@ -72,5 +72,5 @@ be called multiple times (when it assumes control functions and then when it
 relinquishes them to the primary slurmctld daemon).</p>
 
 
-<p style="text-align:center;">Last modified 24 January 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 <!--#include virtual="footer.txt"-->

@@ -101,7 +101,7 @@ MCS_label of user and MCS_label of jobs/nodes.<br>
 <dd>If MCSPlugin!=mcs/none, specifies options
 
 
-<p style="text-align:center;">Last modified 12 October 2015</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->
 

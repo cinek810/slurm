@@ -85,6 +85,6 @@ Its value may be viewed or modified using the scontrol command.</p>
 <p>The last possible source of the resource binding information is the
 TaskPluginParam configuration parameter from the slurm.conf file.</p>
 
-<p style="text-align:center;">Last modified 6 December 2017</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

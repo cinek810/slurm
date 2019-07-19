@@ -261,6 +261,6 @@ the accounting plugin, which periodically gathers data about running jobs. Set
 values suitable for your system.</P>
 
 
-<p style="text-align:center;">Last modified 31 March 2016</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

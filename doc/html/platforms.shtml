@@ -24,6 +24,6 @@ currently. It should be possible to fix this with some adjustments to linker
 and compiler flags, and any patches would be appreciated.
 </ul>
 
-<p style="text-align:center;">Last modified 4 December 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

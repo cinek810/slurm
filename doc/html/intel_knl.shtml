@@ -329,6 +329,6 @@ NodeName=nid[00000-00127] State=UNKNOWN
 </pre>
 
 
-<p style="text-align:center;">Last modified 11 December 2017</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

@@ -200,6 +200,6 @@ wait until the next iteration as defined by <i>PriorityCalcPeriod</i>.
 
 
 <!-- -------------------------------------------------------------------- -->
-<p style="text-align:center;">Last modified 16 Jan 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

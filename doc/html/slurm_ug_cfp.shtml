@@ -44,6 +44,6 @@ Tim Wickberg (SchedMD)</p>
 
 <p><a href="slurm_ug_agenda.html">Registration Information</a></p>
 
-<p style="text-align:center;">Last modified 31 May 2018</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

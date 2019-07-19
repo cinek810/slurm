@@ -397,6 +397,6 @@ to a physical device</pre>
 explicitly defined in the offload pragmas.</P>
 <!-------------------------------------------------------------------------->
 
-<p style="text-align: center;">Last modified 12 April 2019</p>
+<p style="text-align: center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

@@ -1028,6 +1028,6 @@ database with.
 </dl>
 
 
-<p style="text-align:center;">Last modified 22 July 2016</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

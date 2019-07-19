@@ -110,6 +110,6 @@ void slurm_jobcomp_archive(List selected_parts, void *params)
 <p style="margin-left:.2in"><b>Returns</b>: None</p>
 
 
-<p style="text-align:center;">Last modified 7 March 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->

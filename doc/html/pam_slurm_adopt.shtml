@@ -309,6 +309,6 @@ break process adoption with pam_slurm_adopt.</p>
 <p>SELinux may conflict with pam_slurm_adopt, so it might need to be
 disabled.</p>
 
-<p style="text-align:center;">Last modified 29 April 2019</p>
+<p style="text-align:center;">Last modified <!-- #lastmodified --></p>
 
 <!--#include virtual="footer.txt"-->
