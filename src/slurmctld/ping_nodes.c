@@ -77,9 +77,8 @@ bool is_ping_done (void)
 		is_done = false;
 		if (!ping_msg_sent &&
 		    (difftime(time(NULL), ping_start) >= PING_TIMEOUT)) {
-			error("Node ping apparently hung, "
-			      "many nodes may be DOWN or configured "
-			      "SlurmdTimeout should be increased");
+			error("%s: RPC communicating with nodes takes more than %ds. The reason may be many non-responsive nodes. Enabling DebugFlags=Agent may help to narrow down the issue",
+			      __func__, PING_TIMEOUT);
 			ping_msg_sent = true;
 		}
 	} else
