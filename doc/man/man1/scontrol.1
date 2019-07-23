@@ -513,6 +513,9 @@ some termination state. This option is particularly useful in the Slurm Prolog
 or in the batch script itself if nodes are powered down and restarted
 automatically as needed.
 
+\fBNOTE:\fP Don't use scontrol wait_job in Prolog with PrologFlag=Alloc this 
+combination will result in deadlock.
+
 .TP
 \fBwrite batch_script\fP \fIjob_id optional_filename\fP
 Write the batch script for a given job_id to a file or to stdout. The file will
