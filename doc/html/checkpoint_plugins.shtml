@@ -206,6 +206,6 @@ On failure, the plugin should return SLURM_ERROR and set the error_code
 and error_msg to an appropriate value to indicate the reason for failure.</p>
 
 
-<p style="text-align:center;">Last modified 27 March 2015</p>
+<p style="text-align:center;">Last modified 15 March 2019 </p>
 
 <!--#include virtual="footer.txt"-->
