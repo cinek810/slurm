@@ -147,6 +147,6 @@ typedef of void.
 <p style="margin-left:.2in"><b>Returns</b>: SLURM_SUCCESS if successful. On
 failure, the plugin should return SLURM_ERROR, causing slurmctld to exit.</p>
 
-<p style="text-align:center;">Last modified 15 December 2018</p>
+<p style="text-align:center;">Last modified 24 April 2019 </p>
 
 <!--#include virtual="footer.txt"-->
