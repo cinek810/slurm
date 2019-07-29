@@ -207,7 +207,7 @@ extern int _find_type_in_gres_list(void *x, void *key)
  */
 static void _sync_gres_types(List gres_list_system, List gres_list_conf_single)
 {
-	gres_slurmd_conf_t *sys_gres, *conf_found;
+	gres_slurmd_conf_t *sys_gres, *conf_gres;
 	ListIterator itr;
 
 	/*
@@ -220,7 +220,7 @@ static void _sync_gres_types(List gres_list_system, List gres_list_conf_single)
 	/* Only match devices if the conf gres count isn't exceeded */
 	itr = list_iterator_create(gres_list_system);
 	while ((sys_gres = list_next(itr))) {
-		conf_found = list_find_first(gres_list_conf_single,
+		conf_gres = list_find_first(gres_list_conf_single,
 					    _find_type_in_gres_list,
 					    sys_gres->type_name);
 		/*
@@ -228,26 +228,26 @@ static void _sync_gres_types(List gres_list_system, List gres_list_conf_single)
 		 * normalized to 1. Since this is what we should get from
 		 * gpu_g_get_system_gpu_list as gres_list_system.
 		 */
-		xassert(conf_found->count==1);
-		if (!conf_found) {
+		xassert(conf_gres->count==1);
+		if (!conf_gres) {
 			/*
-			 * Setting sys_gres->type_name tu NULL will result in
-			 * the device being skipped
+			 * Setting sys_gres->type_name to NULL (xfree)
+			 * will result in the device being skipped
 			 */
 			error("%s: %s: Could not find a configuration record with a GRES type substring that matches system device `%s`. Setting system GRES type to NULL. This may impact your TRES configuration.",
 			      plugin_type, __func__, sys_gres->type_name);
 			xfree(sys_gres->type_name);
 		}  else {
 			/*
-			 * Overwrite sys_gres type name to match conf_found
+			 * Overwrite sys_gres type name to match conf_gres
 			 * This will result in configured value being used in
 			 * case of FastSchedule==0
 			 */
 			debug("%s: %s: Normalizing system GRES type:%s, to configured value:%s",
-			      plugin_type, __func__,
-			      sys_gres->type_name,conf_found->type_name);
+			      plugin_type, __func__, sys_gres->type_name,
+			      conf_gres->type_name);
 			xfree(sys_gres->type_name);
-			sys_gres->type_name = xstrdup(conf_found->type_name);
+			sys_gres->type_name = xstrdup(conf_gres->type_name);
 		}
 	}
 	list_iterator_destroy(itr);
