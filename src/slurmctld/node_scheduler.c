@@ -3494,13 +3494,15 @@ extern bool valid_feature_counts(struct job_record *job_ptr, bool use_active,
 		else
 			tmp_bitmap = job_feat_ptr->node_bitmap_avail;
 		if (tmp_bitmap) {
-			if (last_op == FEATURE_OP_AND) {
-				bit_and(work_bitmap, tmp_bitmap);
-			} else if (last_op == FEATURE_OP_OR) {
-				bit_or(work_bitmap, tmp_bitmap);
+			if (job_feat_ptr->op_code != FEATURE_OP_XOR &&
+			    job_feat_ptr->op_code != FEATURE_OP_XAND) {
+				if (last_op == FEATURE_OP_AND) {
+					bit_and(work_bitmap, tmp_bitmap);
+				} else if (last_op == FEATURE_OP_OR) {
+					bit_or(work_bitmap, tmp_bitmap);
+				}
 			} else {	/* FEATURE_OP_XOR or FEATURE_OP_XAND */
 				*has_xor = true;
-				bit_or(work_bitmap, tmp_bitmap);
 			}
 		} else {	/* feature not found */
 			if (last_op == FEATURE_OP_AND)
@@ -3517,7 +3519,6 @@ extern bool valid_feature_counts(struct job_record *job_ptr, bool use_active,
 				bit_or(feature_bitmap, work_bitmap);
 			} else {	/* FEATURE_OP_XOR or FEATURE_OP_XAND */
 				*has_xor = true;
-				bit_or(feature_bitmap, work_bitmap);
 			}
 			FREE_NULL_BITMAP(paren_bitmap);
 			work_bitmap = feature_bitmap;
