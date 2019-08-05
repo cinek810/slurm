@@ -34,10 +34,14 @@ source ./globals
 
 set test_id     "21.23"
 set exit_code   0
+set cwd          "[$bin_pwd]"
 set file_in     "test.$test_id.input"
 set ta		"test$test_id-account.1"
-set wk          twckey
+set wk          "test$test_id-wckey"
+set wk2         "test$test_id-wckey2"
+set wk3         "test$test_id-wckey3"
 set timeout 60
+set config_path [get_conf_path]
 
 print_header $test_id
 
@@ -46,10 +50,6 @@ print_header $test_id
 #
 if { [test_account_storage] == 0 } {
 	send_user "\nWARNING: This test can't be run without a usable AccountStorageType\n"
-	exit 0
-}
-if { [test_track_wckey] == 0} {
-	send_user "\nWARNING: This test can't be run without TrackWCKey being set\n"
 	exit 0
 }
 
@@ -95,7 +95,7 @@ expect {
 		exp_continue
 	}
 	-re "Nothing new added" {
-		send_user "\nWARNING: vestigial account $test_acct found\n"
+		send_user "\nWARNING: vestigial account $ta found\n"
 		incr aamatches
 		exp_continue
 	}
@@ -117,6 +117,7 @@ if {$aamatches != 1} {
 # Add self to this new account and wckey
 #
 set sadd_pid [spawn $sacctmgr -i create user name=$user_name account=$ta cluster=$cn wckeys=$wk]
+
 expect {
 	 timeout {
 		send_user "\nFAILURE: sacctmgr add not responding\n"
@@ -126,6 +127,26 @@ expect {
 	eof {
 		wait
 	}
+}
+
+#
+# We have to enable WCKey tracking by slurmctl to test other commands
+#
+
+if {![test_track_wckey_slurmctl]} {
+	send_user "Enabling TrackWCKey...\n"
+	
+	if { $exit_code != 0 } {
+		exit $exit_code
+	}
+	copy_conf $config_path $cwd
+	if { $exit_code != 0 } {
+		exit $exit_code
+	}
+
+	exec $bin_sed -i /^\[\t\s\]*TrackWCKey\[\t\s\]*=/Id $config_path/slurm.conf
+	exec $bin_echo TrackWCKey=Yes >> $config_path/slurm.conf
+	reconfigure
 }
 
 #
@@ -158,6 +179,7 @@ expect {
 if {$using_slurmdbd} {
 	sleep 5
 }
+
 
 spawn $sacct -p -j $job_id --format=wckey
 	expect {
@@ -328,6 +350,126 @@ if {$damatches != 1} {
 	send_user "\nFAILURE: sacctmgr had a problem deleting account\n"
 	set exit_code 1
 }
+
+#
+# Add more test WCKeys the user
+#
+
+set awmatches 0
+set saadd_pid [spawn $sacctmgr -i add user $user_name wckey=$wk,$wk2,$wk3]
+
+expect {
+	-re "W ="	{
+		incr awmatches
+		exp_continue
+	}
+	-re "Nothing new added" {
+		set awmatches 2
+		send_user "WCKeys used in test existed - probably"
+		
+	}
+	timeout {
+		send_user "\nFAILURE: sacctmgr add not responding\n"
+		slow_kill $saadd_pid
+		set exit_code 1
+	}
+	eof {
+		wait
+	}
+}
+
+# $wk should be there before, so only $wk2 and $wk3 was added
+if {$awmatches!=2} {
+	send_user "\nFAILURE: sacctmgr had problems adding two WCKey at once\n"
+	set exit_code 1
+}
+
+#
+# Verify that we have 3 WCKeys in DB
+#
+
+set swmatches 0 
+set sadel_pid [spawn $sacctmgr list -p wckey user=$user_name]
+expect {
+	-ex "\n$wk\|$cn\|$user_name\|"  {
+		incr swmatches
+		exp_continue
+	}
+	-ex "\n$wk2\|$cn\|$user_name\|" {
+		incr swmatches
+		exp_continue
+	}
+	-ex "\n$wk3\|$cn\|$user_name\|" {
+		incr swmatches
+		exp_continue
+	}
+	timeout {
+		send_user "\nFAILURE: sacctmgr delete not responding\n"
+		slow_kill $sadel_pid
+		set exit_code 1
+	}
+	eof {
+		wait
+	}
+}
+
+if {$swmatches!=3} {
+	send_user "FAILURE: We should have 3 test WCKeys configured we have $swmatches\n"
+	set exit_code 1
+}
+
+#
+# Use sacctmgr to delete test WCKeys
+#
+set dwmatches 0
+set sadel_pid [spawn $sacctmgr -i delete user $user_name wckey=$wk,$wk2,$wk3]
+expect {
+	-re "Deleteing WCKeys" {
+		incr dwmatches
+		exp_continue
+	}
+	timeout {
+		send_user "\nFAILURE: sacctmgr delete not responding\n"
+		slow_kill $sadel_pid
+		set exit_code 1
+	}
+	eof {
+		wait
+	}
+}
+
+#
+# Use sacctmgr to verify if WCKey was removed
+#
+
+set sadel_pid [ spawn $sacctmgr -p list wckey where user=$user_name ]
+expect {
+	-ex "\n$wk\|$cn\|$user_name\|" {
+		set exit_code 1
+		send_user "FAILURE: WCKey = $wk should be deleted, but was not\n"
+	}
+	-ex "\n$wk2\|$cn\|$user_name\|" {
+		set exit_code 1
+		send_user "FAILURE: WCKey = $wk2 should be deleted, but was not\n"
+	}
+	-ex "\n$wk3\|$cn\|$user_name\|" {
+		set exit_code 1
+		send_user "FAILURE: WCKey = $wk3 should be deleted, but was not\n"
+	}
+
+	timeout {
+		send_user "\nFAILURE: sacctmgr list not responding\n"
+		slow_kill $sadel_pid
+		set exit_code 1
+	}
+	eof {
+		wait
+	}
+}
+
+send_user "\nChanging slurm.conf back\n"
+exec $bin_cp -v $cwd/slurm.conf.orig $config_path/slurm.conf
+reconfigure
 
 if {$exit_code == 0} {
 	exec $bin_rm -f $file_in
