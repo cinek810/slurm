@@ -152,7 +152,7 @@ to examine the available partitions, reservations, etc.
 <span class="commandline">slurm.SUCCESS</span> &mdash;
 Job submission accepted by plugin.<br>
 <span class="commandline">slurm.FAILURE</span> &mdash;
-Job submission rejected due to error (Deprecated in 19.05).<br>
+Job submission rejected due to error (Replaced by slurm.ERROR in 19.05).<br>
 <span class="commandline">slurm.ERROR</span> &mdash;
 Job submission rejected due to error.<br>
 <span class="commandline">slurm.ESLURM_ACCESS_DENIED</span> &mdash;
@@ -274,6 +274,6 @@ cp job_submit_mine.so file \
    /usr/local/lib/slurm/job_submit_mine.so
 </pre>
 
-<p style="text-align:center;">Last modified 29 September 2017</p>
+<p style="text-align:center;">Last modified 7 August 2019</p>
 
 <!--#include virtual="footer.txt"-->
