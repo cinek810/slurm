@@ -1168,6 +1168,7 @@ typedef struct {
 			     * to tell which accounts are defaults
 			     * and which ones aren't, especially when
 			     * dealing with other versions.)*/
+	slurmdb_wckey_cond_t *wckey_cond; 
 	List def_wckey_list; /* list of char * */
 	uint16_t with_assocs;
 	uint16_t with_coords;
