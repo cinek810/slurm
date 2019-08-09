@@ -1596,7 +1596,7 @@ alloc_job:
 			if (!bit_test(job_res->node_bitmap, i))
 				continue;
 			sock_cnt = 0;
-			for (s = 0; s < select_node_record[i].tot_sockets; s++){
+			for (s = 0; s < select_node_record[i].sockets; s++){
 				last_s = -1;
 				for (c = 0; c<select_node_record[i].cores; c++){
 					if (bit_test(job_res->core_bitmap, ci)){

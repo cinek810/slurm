@@ -309,7 +309,7 @@ static void _select_cores(struct job_record *job_ptr, gres_mc_data_t *mc_ptr,
 	} else if (mc_ptr->ntasks_per_socket) {
 		min_tasks_this_node = mc_ptr->ntasks_per_socket;
 		max_tasks_this_node = mc_ptr->ntasks_per_socket *
-				      select_node_record[node_inx].tot_sockets;
+				      select_node_record[node_inx].sockets;
 	} else if (mc_ptr->ntasks_per_core) {
 		min_tasks_this_node = mc_ptr->ntasks_per_core;
 		max_tasks_this_node = mc_ptr->ntasks_per_core *
@@ -3282,7 +3282,7 @@ extern avail_res_t *can_job_run_on_node(struct job_record *job_ptr,
 		sock_gres_list = gres_plugin_job_test2(
 					job_ptr->gres_list, node_gres_list,
 					test_only, core_map[node_i],
-					select_node_record[node_i].tot_sockets,
+					select_node_record[node_i].sockets,
 					select_node_record[node_i].cores,
 					job_ptr->job_id, node_ptr->name,
 					enforce_binding, s_p_n, &req_sock_map,
@@ -3371,7 +3371,7 @@ extern avail_res_t *can_job_run_on_node(struct job_record *job_ptr,
 					sock_gres_list, avail_mem,
 					avail_res->max_cpus,
 					enforce_binding, core_map[node_i],
-					select_node_record[node_i].tot_sockets,
+					select_node_record[node_i].sockets,
 					select_node_record[node_i].cores,
 					select_node_record[node_i].vpus,
 					s_p_n,

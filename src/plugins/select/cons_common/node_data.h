@@ -48,10 +48,9 @@ typedef struct {
 	uint64_t mem_spec_limit;      /* MB of specialized/system memory */
 	struct node_record *node_ptr; /* ptr to the actual node */
 	uint64_t real_memory;	      /* MB of real memory configured */
-	uint16_t sockets;	      /* count of sockets per board configured*/
+	uint16_t sockets;	      /* count of sockets per node configured*/
 	uint16_t threads;	      /* count of hyperthreads per core */
 	uint16_t tot_cores;	      /* total cores per node */
-	uint16_t tot_sockets;	      /* total sockets per node */
 	uint16_t vpus;		      /* count of virtual processors configure
 				       * this could be the physical threads
 				       * count or could be the core count if

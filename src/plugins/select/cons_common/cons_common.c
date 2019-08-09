@@ -207,7 +207,7 @@ static avail_res_t *_allocate_sc(struct job_record *job_ptr, bitstr_t *core_map,
 	uint16_t cpus_per_task = details_ptr->cpus_per_task;
 	uint16_t free_core_count = 0, spec_threads = 0;
 	uint16_t i, j;
-	uint16_t sockets = select_node_record[node_i].tot_sockets;
+	uint16_t sockets = select_node_record[node_i].sockets;
 	uint16_t cores_per_socket = select_node_record[node_i].cores;
 	uint16_t threads_per_core = select_node_record[node_i].vpus;
 	uint16_t min_cores = 1, min_sockets = 1, ntasks_per_socket = 0;
@@ -885,13 +885,13 @@ extern bitstr_t **common_mark_avail_cores(
 			to_core   = node_res_ptr->cores;
 			incr_core = 1;
 			from_sock = 0;
-			to_sock   = node_res_ptr->tot_sockets;
+			to_sock   = node_res_ptr->sockets;
 			incr_sock = 1;
 		} else {
 			from_core = node_res_ptr->cores - 1;
 			to_core   = -1;
 			incr_core = -1;
-			from_sock = node_res_ptr->tot_sockets - 1;
+			from_sock = node_res_ptr->sockets - 1;
 			to_sock   = -1;
 			incr_sock = -1;
 		}
@@ -1121,11 +1121,8 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 			select_node_record[i].real_memory =
 				node_ptr[i].real_memory;
 		}
-		select_node_record[i].tot_sockets =
-			select_node_record[i].boards *
-			select_node_record[i].sockets;
 		select_node_record[i].tot_cores =
-			select_node_record[i].tot_sockets *
+			select_node_record[i].sockets *
 			select_node_record[i].cores;
 		cume_cores += select_node_record[i].tot_cores;
 		select_node_record[i].cume_cores = cume_cores;
@@ -1141,10 +1138,10 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 			fatal("NodeName=%s CPUs=%u doesn't match neither Sockets(%u)*CoresPerSocket(%u)=(%u) nor Sockets(%u)*CoresPerSocket(%u)*ThreadsPerCore(%u)=(%u).  Please fix your slurm.conf.",
 			      node_ptr[i].name,
 			      select_node_record[i].cpus,
-			      select_node_record[i].tot_sockets,
+			      select_node_record[i].sockets,
 			      select_node_record[i].cores,
 			      select_node_record[i].tot_cores,
-			      select_node_record[i].tot_sockets,
+			      select_node_record[i].sockets,
 			      select_node_record[i].cores,
 			      select_node_record[i].threads,
 			      select_node_record[i].tot_cores *
@@ -1756,7 +1753,7 @@ extern int select_p_select_nodeinfo_set_all(void)
 	struct node_record *node_ptr = NULL;
 	int i, n;
 	uint32_t alloc_cpus, alloc_cores, node_cores, node_cpus, node_threads;
-	uint32_t node_boards, node_sockets, total_node_cores;
+	uint32_t node_sockets, total_node_cores;
 	bitstr_t **alloc_core_bitmap = NULL;
 	List gres_list;
 
@@ -1810,13 +1807,11 @@ extern int select_p_select_nodeinfo_set_all(void)
 		}
 
 		if (slurmctld_conf.fast_schedule) {
-			node_boards  = node_ptr->config_ptr->boards;
 			node_sockets = node_ptr->config_ptr->sockets;
 			node_cores   = node_ptr->config_ptr->cores;
 			node_cpus    = node_ptr->config_ptr->cpus;
 			node_threads = node_ptr->config_ptr->threads;
 		} else {
-			node_boards  = node_ptr->boards;
 			node_sockets = node_ptr->sockets;
 			node_cores   = node_ptr->cores;
 			node_cpus    = node_ptr->cpus;
@@ -1830,8 +1825,7 @@ extern int select_p_select_nodeinfo_set_all(void)
 			else
 				alloc_cores = 0;
 
-			total_node_cores =
-				node_boards * node_sockets * node_cores;
+			total_node_cores = node_sockets * node_cores;
 		} else {
 			int start = cr_get_coremap_offset(n);
 			int end = cr_get_coremap_offset(n + 1);
@@ -2088,7 +2082,6 @@ extern int select_p_update_node_config(int index)
 			select_node_record[index].node_ptr->config_ptr->cores;
 		select_node_record[index].sockets =
 			select_node_record[index].node_ptr->config_ptr->sockets;
-		/* tot_sockets should be the same */
 		/* tot_cores should be the same */
 	}
 

@@ -3805,8 +3805,7 @@ static int _build_node_list(struct job_record *job_ptr,
 			list_next(config_iterator))) {
 		bool cpus_ok = false, mem_ok = false, disk_ok = false;
 		bool job_mc_ok = false, config_filter = false;
-		total_cores = config_ptr->boards * config_ptr->sockets *
-			      config_ptr->cores;
+		total_cores = config_ptr->sockets * config_ptr->cores;
 		adj_cpus = adjust_cpus_nppcu(_get_ntasks_per_core(detail_ptr),
 					     detail_ptr->cpus_per_task,
 					     total_cores, config_ptr->cpus);
@@ -4310,8 +4309,7 @@ static void _filter_nodes_in_set(struct node_set *node_set_ptr,
 			continue;
 
 		node_ptr = &node_record_table_ptr[i];
-		total_cores = node_ptr->boards * node_ptr->sockets *
-			      node_ptr->cores;
+		total_cores = node_ptr->sockets * node_ptr->cores;
 		adj_cpus = adjust_cpus_nppcu(_get_ntasks_per_core(job_con),
 					     job_con->cpus_per_task,
 					     total_cores, node_ptr->cpus);
