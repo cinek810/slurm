@@ -5079,9 +5079,10 @@ extern int *set_span(int total,  uint16_t tree_width)
 	if (total <= tree_width) {
 		return span;
 	}
-
+	debug("MARCIN:--------------------------- new call");
 	while (left > 0) {
 		for (i = 0; i < tree_width; i++) {
+			debug("MARCIN START: tree_width=%d i=%d left=%d tree_width-i=%d,span[%d]=%d",tree_width,i,left,tree_width-i,i,span[i]);
 			if ((tree_width-i) >= left) {
 				if (span[i] == 0) {
 					left = 0;
@@ -5105,6 +5106,7 @@ extern int *set_span(int total,  uint16_t tree_width)
 
 			span[i] += tree_width;
 			left -= tree_width;
+			debug("MARCIN END: tree_width=%d i=%d left=%d tree_width-i=%d,span[%d]=%d",tree_width,i,left,tree_width-i,i,span[i]);
 		}
 	}
 

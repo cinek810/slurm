@@ -497,10 +497,12 @@ extern int route_split_hostlist_treewidth(hostlist_t hl,
 	*sp_hl = xmalloc(tree_width * sizeof(hostlist_t));
 
 	while ((name = hostlist_shift(hl))) {
+		debug("MARCIN: span[%d]=%d",nhl,span[nhl]);
 		(*sp_hl)[nhl] = hostlist_create(name);
 		free(name);
 		for (j = 0; j < span[nhl]; j++) {
 			name = hostlist_shift(hl);
+			debug("\tMARCIN: j=%d Adding node:%s",j,name);
 			if (!name) {
 				break;
 			}
