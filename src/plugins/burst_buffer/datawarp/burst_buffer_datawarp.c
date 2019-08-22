@@ -1580,7 +1580,7 @@ static void *_start_stage_in(void *x)
 	data_in_argv = stage_args->args2;
 
 	if (stage_args->timeout)
-		timeout = stage_args->timeout * 1000;
+		timeout = bb_state.bb_config.other_timeout * 1000;
 	else
 		timeout = DEFAULT_OTHER_TIMEOUT * 1000;
 	op = "setup";
@@ -1906,7 +1906,7 @@ static void *_start_stage_out(void *x)
 	post_run_argv = stage_args->args2;
 
 	if (stage_args->timeout)
-		timeout = stage_args->timeout * 1000;
+		timeout = bb_state.bb_config.other_timeout * 1000;
 	else
 		timeout = DEFAULT_OTHER_TIMEOUT * 1000;
 	op = "dws_post_run";
