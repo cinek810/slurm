@@ -1131,6 +1131,10 @@ extern int select_p_node_init(struct node_record *node_ptr, int node_cnt)
 			      select_node_record[i].threads,
 			      select_node_record[i].tot_cores *
 			      select_node_record[i].threads);
+		if ((select_node_record[i].tot_sockets == 1) &&
+		    cr_type & CR_SOCKET &&
+		    select_node_recotr[i].node_record.core_spec_cnt > 0)
+			fatal("This node cannot be used because of the combination of CR_SOCKET, tot_sockets=1 spec_cores>0 and AllowSpecCores = NO");
 
 		select_node_usage[i].node_state = NODE_CR_AVAILABLE;
 		gres_plugin_node_state_dealloc_all(
