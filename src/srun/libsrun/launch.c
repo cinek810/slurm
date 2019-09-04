@@ -345,6 +345,7 @@ extern int launch_common_create_job_step(srun_job_t *job, bool use_all_cpus,
 				   add_tres);
 		} else
 			job->ctx_params.tres_per_node = xstrdup(add_tres);
+		info("MARCIN: add_tres: %s",add_tres);
 	}
 	xfmt_tres(&job->ctx_params.tres_per_socket, "gpu",
 		  opt_local->gpus_per_socket);
@@ -355,10 +356,10 @@ extern int launch_common_create_job_step(srun_job_t *job, bool use_all_cpus,
 			   opt.mem_per_gpu);
 	}
 
-	debug("requesting job %u, user %u, nodes %u including (%s)",
+	info("requesting job %u, user %u, nodes %u including (%s) tres_per_node: %s",
 	      job->ctx_params.job_id, job->ctx_params.uid,
-	      job->ctx_params.min_nodes, job->ctx_params.node_list);
-	debug("cpus %u, tasks %u, name %s, relative %u",
+	      job->ctx_params.min_nodes, job->ctx_params.node_list,job->ctx_params.tres_per_node);
+	info("cpus %u, tasks %u, name %s, relative %u",
 	      job->ctx_params.cpu_count, job->ctx_params.task_count,
 	      job->ctx_params.name, job->ctx_params.relative);
 

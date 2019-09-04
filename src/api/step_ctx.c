@@ -258,6 +258,7 @@ slurm_step_ctx_create_timeout (const slurm_step_ctx_params_t *step_params,
 	long elapsed_time;
 	DEF_TIMERS;
 
+	info("MARCIN:%s: tres_per_node:%s",__func__,step_params->tres_per_node);
 	/*
 	 * We will handle the messages in the step_launch.c mesage handler,
 	 * but we need to open the socket right now so we can tell the
