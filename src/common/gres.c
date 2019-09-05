@@ -7726,6 +7726,18 @@ extern void gres_plugin_job_core_filter3(gres_mc_data_t *mc_ptr,
 		 * spread them out so that every socket has some cores
 		 * available to use with the nearby GRES that we do need.
 		 */
+		/*TEMPORARY PATCH FOR BUG7685*/
+		avail_cores_tot = 0;
+		for (s = 0; s < sockets; s++) {
+			avail_cores_per_sock[s] = 0;
+			for (c = 0; c < cores_per_socket; c++) {
+				i = (s * cores_per_socket) + c;
+				if (bit_test(avail_core, i))
+					avail_cores_per_sock[s]++;
+			}
+			avail_cores_tot += avail_cores_per_sock[s];
+		}
+		/*END OF TEMPORARY PATCH*/
 		while (avail_cores_tot > req_cores) {
 			full_socket = -1;
 			for (s = 0; s < sockets; s++) {
