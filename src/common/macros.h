@@ -192,7 +192,7 @@
 		int err = pthread_mutex_destroy(mutex);			\
 		if (err) {						\
 			errno = err;					\
-			fatal("%s:%d %s: pthread_mutex_destroy(): %m",	\
+			fatal_abort("%s:%d %s: pthread_mutex_destroy(): %m",	\
 				__FILE__, __LINE__, __func__);		\
 			abort();					\
 		}							\
