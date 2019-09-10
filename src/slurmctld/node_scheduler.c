@@ -4284,30 +4284,30 @@ static void _log_node_set(struct job_record *job_ptr,
 static void _set_err_msg(bool cpus_ok, bool mem_ok, bool disk_ok,
 			 bool job_mc_ok, char **err_msg)
 {
+	char * enforce_part_limits=NULL;
+
+	if (slurmctld_conf.enforce_part_limits == PARTITION_ENFORCE_ALL)
+		enforce_part_limits = xstrdup("by all partitions");
+	else /*ANY or NO*/
+		enforce_part_limits = xstrdup("by any partition");
+
 	if (!err_msg)
 		return;
-	if (!cpus_ok) {
-		xfree(*err_msg);
-		*err_msg = xstrdup("CPU count per node can not be satisfied");
-		return;
-	}
-	if (!mem_ok) {
-		xfree(*err_msg);
-		*err_msg = xstrdup("Memory specification can not be satisfied");
-		return;
-	}
-	if (!disk_ok) {
-		xfree(*err_msg);
-		*err_msg = xstrdup("Temporary disk specification can not be "
-				   "satisfied");
-		return;
-	}
-	if (!job_mc_ok) {
-		xfree(*err_msg);
-		*err_msg = xstrdup("Socket, core and/or thread specification "
-				   "can not be satisfied");
-		return;
-	}
+
+	xfree(*err_msg);
+	if (!cpus_ok)
+		*err_msg = xstrdup_printf("CPU count per node can not be satisfied %s.",
+				   enforce_part_limits);
+	else if (!mem_ok)
+		*err_msg = xstrdup_printf("Memory specification can not be satisfied %s.",
+				   enforce_part_limits);
+	else if (!disk_ok)
+		*err_msg = xstrdup_printf("Temporary disk specification can not be satisfied %s.",
+				   enforce_part_limits);
+	else if (!job_mc_ok)
+		*err_msg = xstrdup_printf("Socket, core and/or thread specification can not be satisfied %s.",
+				   enforce_part_limits);
+	xfree(enforce_part_limits);
 }
 
 /*
