@@ -37,6 +37,7 @@ set test_id     "17.12"
 set exit_code   0
 set file_in     "test$test_id.input"
 set test_part   "test$test_id\_part"
+set featC       "test$test_id\_common"
 set feat0       "test$test_id\_zero"
 set feat1       "test$test_id\_one"
 set feat2       "test$test_id\_two"
@@ -625,7 +626,7 @@ proc sub_job_xor {nnode fail_test} {
 	set fail_node_config 0
 
 	if {$fail_test} {
-		spawn $sbatch -C "\[$feat0|$feat1\]" -p$test_part -N$nnode -t1 -o /dev/null $file_in
+		spawn $sbatch -C "$\[$feat0|$feat1\]" -p$test_part -N$nnode -t1 -o /dev/null $file_in
 		expect {
 			-re "Submitted batch job ($number)" {
 				set test_job $expect_out(1,string)
@@ -653,7 +654,7 @@ proc sub_job_xor {nnode fail_test} {
 			set exit_code 1
 		}
 	} else {
-		spawn $sbatch -C "\[$feat0|$feat1\]" -p$test_part -N$nnode -t1 -o /dev/null $file_in
+		spawn $sbatch -C "$feat0&\[$feat2|$featC\]" -p$test_part -N$nnode -t1 -o /dev/null $file_in
 		expect {
 			-re "Submitted batch job ($number)" {
 				set test_job $expect_out(1,string)
@@ -877,10 +878,10 @@ foreach option [array names nodes] {
 
 # Set node features for testing
 send_user "\n\n==========Set node features to test-specific values for testing==========\n"
-set_node_feature $nodes(0) $feat0
-set_node_feature $nodes(1) $feat1
-set_node_feature $nodes(2) $feat0,$feat2
-set_node_feature $nodes(3) $feat0,$feat2,$feat3
+set_node_feature $nodes(0) $featC,$feat0
+set_node_feature $nodes(1) $featC,$feat1
+set_node_feature $nodes(2) $featC,$feat0,$feat2
+set_node_feature $nodes(3) $featC,$feat0,$feat2,$feat3
 
 # Create a test partition
 spawn $scontrol create partition=$test_part \
@@ -929,6 +930,7 @@ sub_job_xand 3 1
 # Test eXclusive OR (XOR) with 2 nodes
 send_user "\n\n==========Test XOR 2 nodes==========\n"
 sub_job_xor 2 0
+sub_job_xor 2 0 #Make sure 2nd job will not use node1 Bug:7378
 
 # Test eXclusive OR (XOR) with 3 nodes
 send_user "\n\n==========Test XOR 3 nodes==========\n"
