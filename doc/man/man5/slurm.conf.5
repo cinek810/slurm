@@ -754,17 +754,25 @@ May not exceed 65533.
 
 .TP
 \fBEnforcePartLimits\fR
-If set to "ALL" then jobs which exceed a partition's size and/or
-time limits will be rejected at submission time. If job is submitted to
-multiple partitions, the job must satisfy the limits on all the requested
-partitions. If set to "NO" then the job will be accepted and remain queued
-until the partition limits are altered(Time and Node Limits).
-If set to "ANY" a job must satisfy any of the requested partitions
-to be submitted. The default value is "NO".
-NOTE: If set, then a job's QOS can not be used to exceed partition limits.
-NOTE: The partition limits being considered are it's configured MaxMemPerCPU,
-MaxMemPerNode, MinNodes, MaxNodes, MaxTime, AllocNodes, AllowAccounts,
-AllowGroups, AllowQOS, and QOS usage threshold.
+Controls partition configuration and hardware limits enforcement to jobs at the
+submission time. The default value is NO, in all other cases QoS can not be
+used to exceed partition limits.
+.RS
+.TP
+\fBALL\fR
+Job has to satisfy hardware resources and partition limits of all partitions it
+was submitted to. Jobs which exceed a partition's hardware resources or limits
+will be rejected at submission time.
+.TP
+\fBNO\fR
+The job will be accepted and remain queued despite of partition limits. However,
+the job hardware requirements have to be met by at least one of the partitions
+job was submitted to.
+.TP
+\fBANY\fR
+Job must satisfy any of the requested partitions configuration and resources
+limits.
+.RE
 
 .TP
 \fBEpilog\fR

@@ -4482,9 +4482,10 @@ static int _select_nodes_parts(struct job_record *job_ptr, bool test_only,
 				    (part_limits_rc == WAIT_PART_DOWN))
 					rc = ESLURM_PARTITION_DOWN;
 			}
-			if ((rc == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) &&
-			    (slurmctld_conf.enforce_part_limits ==
-			     PARTITION_ENFORCE_ALL)) {
+			if (((rc == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) ||
+			     (rc == ESLURM_REQUESTED_NODE_CONFIG_UNAVAILABLE))
+			    && (slurmctld_conf.enforce_part_limits ==
+				PARTITION_ENFORCE_ALL)) {
 				best_rc = rc;	/* Job can not run */
 				break;
 			}
@@ -4803,7 +4804,8 @@ extern int job_allocate(job_desc_msg_t * job_specs, int immediate,
 
 	acct_policy_add_job_submit(job_ptr);
 
-	if ((error_code == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) &&
+	if (((error_code == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) ||
+	    (error_code == ESLURM_REQUESTED_NODE_CONFIG_UNAVAILABLE)) &&
 	    (slurmctld_conf.enforce_part_limits != PARTITION_ENFORCE_NONE))
 		;	/* Reject job submission */
 	else if ((error_code == ESLURM_NODES_BUSY) ||
@@ -4814,6 +4816,7 @@ extern int job_allocate(job_desc_msg_t * job_specs, int immediate,
 		 (error_code == ESLURM_ACCOUNTING_POLICY) ||
 		 (error_code == ESLURM_RESERVATION_NOT_USABLE) ||
 		 (error_code == ESLURM_REQUESTED_PART_CONFIG_UNAVAILABLE) ||
+		 (error_code == ESLURM_REQUESTED_NODE_CONFIG_UNAVAILABLE) ||
 		 (error_code == ESLURM_POWER_NOT_AVAIL) ||
 		 (error_code == ESLURM_BURST_BUFFER_WAIT) ||
 		 (error_code == ESLURM_POWER_RESERVED) ||

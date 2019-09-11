@@ -30,6 +30,9 @@ SPECIAL NOTES FOR CRAY SYSTEMS
 
 CONFIGURATION FILE CHANGES (see man appropriate man page for details)
 =====================================================================
+ -- EnforcePartLimits applies to both resources and partition limits
+    previously it was only partition limits. The default value was 
+    changed from NO to ANY.
 
 COMMAND CHANGES (see man pages for details)
 ===========================================
