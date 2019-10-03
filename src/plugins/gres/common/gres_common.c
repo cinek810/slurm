@@ -267,7 +267,7 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 				 * This can happen if GRES count in slurm.conf
 				 * and gres.conf differ and FastSchedule!= 0
 				 */
-				error("%s: gres_list size different from count of gres_devices",
+				error("%s: DEBUG gres_list size different from count of gres_devices",
 				      __func__);
 				break;
 			}
@@ -288,7 +288,7 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 			else
 				index = gres_device->dev_num;
 
-			error("i=%d, local_inx=%d, gres_per_task=%d assigned=%d",i,*local_inx,gres_per_task,assigned);
+			error("%s: DEBUG: i=%d, local_inx=%d, gres_per_task=%d assigned=%d",__func__,i,*local_inx,gres_per_task,assigned);
 
 			if (reset) {
 				if (!first_device)
@@ -311,7 +311,7 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 			global_prefix = ",";
 			assigned++;
 			if (reset && gres_per_task && assigned >= gres_per_task ) {
-				error("gres_per_task = %d", gres_per_task);
+				error("%s: DEBUG: gres_per_task = %d",__func__, gres_per_task);
 				break;
 			}
 		}

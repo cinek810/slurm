@@ -11850,7 +11850,7 @@ extern uint64_t gres_plugin_step_count(List step_gres_list, char *gres_name)
  * This function only works with task/cgroup and constrained devices or
  * if the job step has access to the entire node's resources.
  */
-static bitstr_t * _get_usable_gres(int context_inx)
+static bitstr_t * _get_usable_gres(int context_inx, int local_proc_id)
 {
 #if defined(__APPLE__)
 	return NULL;
@@ -11902,10 +11902,18 @@ static bitstr_t * _get_usable_gres(int context_inx)
 		} else {
 			i_last = bit_fls(gres_slurmd_conf->cpus_bitmap);
 			for (i = 0; i <= i_last; i++) {
-				if (!bit_test(gres_slurmd_conf->cpus_bitmap, i))
+				char * cpus2;
+				if (!bit_test(gres_slurmd_conf->cpus_bitmap, i)) {
+					error("DEBUG: local_proc_id:%d continue - not in gres bitmap i=%d ",local_proc_id, i);
 					continue;
-				if (!CPU_ISSET(i, &mask))
+				}
+				if (!CPU_ISSET(i, &mask)) {
+					error("DEBUG: local_proc_id:%d continue - not in cpuset i=%d ", local_proc_id, i);
 					continue;
+				}
+				cpus2=bit_fmt_full(gres_slurmd_conf->cpus_bitmap);
+				error("DEBUG: local_proc_id:%d setting gres i=%d gres_inx=%d filename=%s cpus=%s bitmap:%s", local_proc_id, i,gres_inx,gres_slurmd_conf->file,gres_slurmd_conf->cpus,cpus2);
+				xfree(cpus2);
 				bit_nset(usable_gres, gres_inx,
 					 gres_inx + gres_slurmd_conf->count -1);
 				break;
@@ -12124,19 +12132,19 @@ extern void gres_plugin_step_set_env(char ***job_env_ptr, List step_gres_list,
 					usable_gres = _get_gres_mask(mask_gpu,
 								local_proc_id);
 				} else if (bind_gpu)
-					usable_gres = _get_usable_gres(i);
+					usable_gres = _get_usable_gres(i,local_proc_id);
 				else
 					continue;
 			} else if (!xstrcmp(gres_context[i].gres_name,
 					    "mic")) {
 				if (bind_mic)
-					usable_gres = _get_usable_gres(i);
+					usable_gres = _get_usable_gres(i,local_proc_id);
 				else
 					continue;
 			} else if (!xstrcmp(gres_context[i].gres_name,
 					    "nic")) {
 				if (bind_nic)
-					usable_gres = _get_usable_gres(i);
+					usable_gres = _get_usable_gres(i,local_proc_id);
 				else
 					continue;
 			} else {
