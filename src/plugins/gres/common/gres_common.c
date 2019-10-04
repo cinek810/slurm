@@ -254,9 +254,9 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 
 	if (bit_alloc) {
 		int index, assigned=0;
+		int local_inx2 = (*local_inx) - 1;
 		len = bit_size(bit_alloc);
 		i = -1;
-		(*local_inx) = (*local_inx) - 1;
 
 		itr = list_iterator_create(gres_devices);
 		while ((gres_device = list_next(itr))) {
@@ -273,22 +273,22 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 			}
 			if (!bit_test(bit_alloc, i))
 				continue;
-			(*local_inx)++;
+			local_inx2++;
 
 			/*
 			 * We're using local_inx with an offset of task number,
 			 * if we didn't get enought GPU starting from offset
 			 * start back from zero.
 			 */
-			if ( *local_inx >= len)
-				(*local_inx) = 0;
+			if ( local_inx2 >= len)
+				local_inx2 = 0;
 
 			if (use_local_dev_index)
-				index = *local_inx;
+				index = local_inx2;
 			else
 				index = gres_device->dev_num;
 
-			error("%s: DEBUG: i=%d, local_inx=%d, gres_per_task=%d assigned=%d",__func__,i,*local_inx,gres_per_task,assigned);
+			error("%s: DEBUG: i=%d, index=%d, use_local_dev_index=%d local_inx=%d, local_inx2=%d gres_per_task=%d assigned=%d",__func__,i,index,use_local_dev_index,*local_inx,local_inx2,gres_per_task,assigned);
 
 			if (reset) {
 				if (!first_device)
@@ -319,7 +319,7 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 		if (reset && !new_global_list && first_device) {
 			xstrfmtcat(new_local_list, "%s%s%d", local_prefix,
 				   prefix, use_local_dev_index ?
-				   (*local_inx)++ : first_device->dev_num);
+				   local_inx2++ : first_device->dev_num);
 			xstrfmtcat(new_global_list, "%s%s%d", global_prefix,
 				   prefix, first_device->dev_num);
 		}
