@@ -11904,15 +11904,15 @@ static bitstr_t * _get_usable_gres(int context_inx, int local_proc_id)
 			for (i = 0; i <= i_last; i++) {
 				char * cpus2;
 				if (!bit_test(gres_slurmd_conf->cpus_bitmap, i)) {
-					error("DEBUG: local_proc_id:%d continue - not in gres bitmap i=%d ",local_proc_id, i);
+					info("DEBUG: local_proc_id:%d continue - not in gres bitmap i=%d ",local_proc_id, i);
 					continue;
 				}
 				if (!CPU_ISSET(i, &mask)) {
-					error("DEBUG: local_proc_id:%d continue - not in cpuset i=%d ", local_proc_id, i);
+					info("DEBUG: local_proc_id:%d continue - not in cpuset i=%d ", local_proc_id, i);
 					continue;
 				}
 				cpus2=bit_fmt_full(gres_slurmd_conf->cpus_bitmap);
-				error("DEBUG: local_proc_id:%d setting gres i=%d gres_inx=%d filename=%s cpus=%s bitmap:%s", local_proc_id, i,gres_inx,gres_slurmd_conf->file,gres_slurmd_conf->cpus,cpus2);
+				info("DEBUG: local_proc_id:%d setting gres i=%d gres_inx=%d filename=%s cpus=%s bitmap:%s", local_proc_id, i,gres_inx,gres_slurmd_conf->file,gres_slurmd_conf->cpus,cpus2);
 				xfree(cpus2);
 				bit_nset(usable_gres, gres_inx,
 					 gres_inx + gres_slurmd_conf->count -1);

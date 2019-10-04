@@ -288,7 +288,7 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 			else
 				index = gres_device->dev_num;
 
-			error("%s: DEBUG: i=%d, index=%d, use_local_dev_index=%d local_inx=%d, local_inx2=%d gres_per_task=%d assigned=%d",__func__,i,index,use_local_dev_index,*local_inx,local_inx2,gres_per_task,assigned);
+			info("%s: DEBUG: i=%d, index=%d, use_local_dev_index=%d local_inx=%d, local_inx2=%d gres_per_task=%d assigned=%d",__func__,i,index,use_local_dev_index,*local_inx,local_inx2,gres_per_task,assigned);
 
 			if (reset) {
 				if (!first_device)
@@ -310,10 +310,10 @@ extern void common_gres_set_env(List gres_devices, char ***env_ptr,
 				   prefix, gres_device->dev_num);
 			global_prefix = ",";
 			assigned++;
-			if (reset && gres_per_task && assigned >= gres_per_task ) {
-				error("%s: DEBUG: gres_per_task = %d",__func__, gres_per_task);
+/*			if (reset && gres_per_task && assigned >= gres_per_task ) {
+				info("%s: DEBUG: gres_per_task = %d", __func__, gres_per_task);
 				break;
-			}
+			}*/
 		}
 		list_iterator_destroy(itr);
 		if (reset && !new_global_list && first_device) {
