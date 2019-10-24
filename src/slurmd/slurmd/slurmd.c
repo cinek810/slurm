@@ -1499,6 +1499,7 @@ _process_cmdline(int ac, char **av)
 		conf->stepd_loc = slurm_get_stepd_loc();
 
 	if (print_gres) {
+		List gres_list = NULL;
 		log_options_t *o = &conf->log_opts;
 		o->logfile_level = LOG_LEVEL_QUIET;
 		o->stderr_level = LOG_LEVEL_INFO;
@@ -1508,6 +1509,9 @@ _process_cmdline(int ac, char **av)
 
 		slurm_set_debug_flags(DEBUG_FLAG_GRES);
 		(void) gres_plugin_init();
+		gres_plugin_init_node_config(conf->node_name, conf->gres,
+						     &gres_list);
+
 		(void) gres_plugin_node_config_load(
 					1024,	/* Do not need real CPU count */
 					conf->node_name, NULL, NULL,
