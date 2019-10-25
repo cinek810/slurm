@@ -196,6 +196,7 @@ static void      _msg_engine(void);
 static uint64_t  _parse_msg_aggr_params(int type, char *params);
 static void      _print_conf(void);
 static void      _print_config(void);
+static void      _print_gres(void);
 static void      _process_cmdline(int ac, char **av);
 static void      _read_config(void);
 static void      _reconfigure(void);
@@ -1414,6 +1415,51 @@ _print_config(void)
 }
 
 static void
+_print_gres(void) {
+	List gres_list = NULL;
+	struct node_record * node_rec=NULL;
+	log_options_t *o = &conf->log_opts;
+
+	/*
+	 * Since information from slurm.conf is merged with
+	 * gres.conf/AutoDetect we need to initialize slurm.conf here
+	 */
+
+	slurm_conf_init(conf->conffile);
+	init_node_conf();
+
+	slurm_set_debug_flags(DEBUG_FLAG_GRES);
+	if (gres_plugin_init() != SLURM_SUCCESS)
+		fatal("Failed to initialize GRES plugin");
+
+	build_all_nodeline_info(true, 0);
+	_read_config();
+
+	o->logfile_level = LOG_LEVEL_QUIET;
+	o->stderr_level = LOG_LEVEL_INFO;
+	o->syslog_level = LOG_LEVEL_INFO;
+	o->prefix_level = false;
+	log_alter(conf->log_opts, SYSLOG_FACILITY_USER, NULL);
+
+	node_rec = find_node_record(conf->node_name);
+	if (node_rec && node_rec->config_ptr) {
+		gres_plugin_init_node_config(conf->node_name,
+					     node_rec->config_ptr->gres,
+					     &gres_list);
+
+		gres_plugin_node_config_load(
+					1024, /*Do not need real #CPU*/
+					conf->node_name, gres_list,
+					NULL,
+					(void *)&xcpuinfo_mac_to_abs);
+		list_destroy(gres_list);
+	}
+	else
+		fatal("Unable to find node record for node:%s",
+		      conf->node_name);
+}
+
+static void
 _process_cmdline(int ac, char **av)
 {
 	static char *opt_string = "bcCd:Df:GhL:Mn:N:vV";
@@ -1452,8 +1498,8 @@ _process_cmdline(int ac, char **av)
 			conf->conffile = xstrdup(optarg);
 			break;
 		case 'G':
-			print_gres = true;
-			break;
+			_print_gres();
+			exit(0);
 		case 'h':
 			_usage();
 			exit(0);
@@ -1498,51 +1544,7 @@ _process_cmdline(int ac, char **av)
 	if (!conf->stepd_loc)
 		conf->stepd_loc = slurm_get_stepd_loc();
 
-	if (print_gres) {
-		List gres_list = NULL;
-		struct node_record * node_rec=NULL;
-		log_options_t *o = &conf->log_opts;
 
-		/*
-		 * Since information from slurm.conf is merged with
-		 * gres.conf/AutoDetect we need to initialize slurm.conf here
-		 */
-
-		slurm_conf_init(conf->conffile);
-		init_node_conf();
-
-		slurm_set_debug_flags(DEBUG_FLAG_GRES);
-		if (gres_plugin_init() != SLURM_SUCCESS)
-			fatal("Failed to initialize GRES plugin");
-
-		build_all_nodeline_info(true, 0);
-		_read_config();
-
-		o->logfile_level = LOG_LEVEL_QUIET;
-		o->stderr_level = LOG_LEVEL_INFO;
-		o->syslog_level = LOG_LEVEL_INFO;
-		o->prefix_level = false;
-		log_alter(conf->log_opts, SYSLOG_FACILITY_USER, NULL);
-
-		node_rec = find_node_record(conf->node_name);
-		if (node_rec && node_rec->config_ptr) {
-			gres_plugin_init_node_config(conf->node_name,
-						     node_rec->config_ptr->gres,
-						     &gres_list);
-
-			gres_plugin_node_config_load(
-						1024, /*Do not need real #CPU*/
-						conf->node_name, gres_list,
-						NULL,
-						(void *)&xcpuinfo_mac_to_abs);
-			list_destroy(gres_list);
-		}
-		else
-			fatal("Unable to find node record for node:%s",
-			      conf->node_name);
-
-		exit(0);
-	}
 }
 
 
