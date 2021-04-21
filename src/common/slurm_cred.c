@@ -595,7 +595,32 @@ slurm_cred_create(slurm_cred_ctx_t ctx, slurm_cred_arg_t *arg,
 	cred->job_gres_list   = gres_job_state_dup(arg->job_gres_list);
 	cred->step_gres_list  = gres_step_state_dup(arg->step_gres_list);
 	cred->job_mem_limit   = arg->job_mem_limit;
+	if (arg->job_mem_alloc) {
+		cred->job_mem_alloc = xcalloc(arg->job_mem_alloc_size,
+					      sizeof(uint64_t));
+		memcpy(cred->job_mem_alloc, arg->job_mem_alloc,
+		       sizeof(uint64_t) * arg->job_mem_alloc_size);
+
+		cred->job_mem_alloc_rep_count =
+			xcalloc(arg->job_mem_alloc_size, sizeof(uint32_t));
+		memcpy(cred->job_mem_alloc_rep_count,
+		       arg->job_mem_alloc_rep_count,
+		       sizeof(uint32_t) * arg->job_mem_alloc_size);
+	}
 	cred->step_mem_limit  = arg->step_mem_limit;
+	if (arg->step_mem_alloc) {
+		cred->step_mem_alloc = xcalloc(arg->step_mem_alloc_size,
+					       sizeof(uint64_t));
+		memcpy(cred->step_mem_alloc, arg->step_mem_alloc,
+		       sizeof(uint64_t) * arg->step_mem_alloc_size);
+
+		cred->step_mem_alloc_rep_count =
+			xcalloc(arg->step_mem_alloc_size, sizeof(uint32_t));
+		memcpy(cred->step_mem_alloc_rep_count,
+		       arg->step_mem_alloc_rep_count,
+		       sizeof(uint32_t) * arg->step_mem_alloc_size);
+
+	}
 	cred->step_hostlist   = xstrdup(arg->step_hostlist);
 	cred->x11             = arg->x11;
 	if (arg->sock_core_rep_count) {

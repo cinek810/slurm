@@ -166,7 +166,7 @@ typedef struct {
 
 	uint64_t *job_mem_alloc;	/*Per node allocated mem in rep_count*/
 	uint32_t *job_mem_alloc_rep_count;
-	uint32_t step_mem_alloc_size;	/*Size of memory arrays above*/
+	uint32_t job_mem_alloc_size;	/*Size of memory arrays above*/
 	uint32_t  job_nhosts;		/* count of nodes allocated to JOB */
 	List job_gres_list;		/* Generic resources allocated to JOB */
 	uint16_t  x11;			/* x11 flag set on job */
