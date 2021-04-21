@@ -750,6 +750,36 @@ static void _kill_job_on_msg_fail(uint32_t job_id)
 	unlock_slurmctld(job_write_lock);
 }
 
+static void _mem_array_to_rep_count(uint64_t *array, uint32_t array_size,
+				    uint64_t **values_ptr,
+				    uint32_t **rep_count_ptr, uint32_t *size)
+{
+	int values_cnt = 1;
+	int pre_value = array[0];
+
+
+	for (int i = 0; i < array_size; i++) {
+		if (pre_value != array[i]) {
+			pre_value = array[i];
+			values_cnt++;
+		}
+	}
+	*values_ptr = xcalloc(values_cnt, sizeof(uint64_t));
+	*rep_count_ptr = xcalloc(values_cnt, sizeof(uint32_t));
+	*size = values_cnt;
+
+	pre_value = (*values_ptr)[0] = array[0];
+	for (int i = 0; i < array_size; i++) {
+		int values_inx = 0;
+		if (pre_value != array[i]) {
+			pre_value = array[i];
+			values_inx++;
+			(*values_ptr)[values_inx] = array[i];
+		}
+		(*rep_count_ptr)[values_inx]++;
+	}
+}
+
 /* create a credential for a given job step, return error code */
 static int _make_step_cred(step_record_t *step_ptr, slurm_cred_t **slurm_cred,
 			   uint16_t protocol_version)
@@ -771,6 +801,14 @@ static int _make_step_cred(step_record_t *step_ptr, slurm_cred_t **slurm_cred,
 	cred_arg.job_core_spec   = job_ptr->details->core_spec;
 	cred_arg.job_hostlist    = job_resrcs_ptr->nodes;
 	cred_arg.job_mem_limit   = job_ptr->details->pn_min_memory;
+	if (cred_arg.job_mem_limit) {
+		_mem_array_to_rep_count(job_resrcs_ptr->memory_allocated,
+					bit_set_count(job_ptr->node_bitmap),
+					&cred_arg.job_mem_alloc,
+					&cred_arg.job_mem_alloc_rep_count,
+					&cred_arg.job_mem_alloc_size);
+	}
+
 	cred_arg.job_nhosts      = job_resrcs_ptr->nhosts;
 	cred_arg.job_gres_list   = job_ptr->gres_list;
 	cred_arg.step_gres_list  = step_ptr->gres_list;
@@ -782,8 +820,15 @@ static int _make_step_cred(step_record_t *step_ptr, slurm_cred_t **slurm_cred,
 #else
 	cred_arg.step_hostlist   = step_ptr->step_layout->node_list;
 #endif
-	if (step_ptr->pn_min_memory)
+	if (step_ptr->pn_min_memory) {
 		cred_arg.step_mem_limit  = step_ptr->pn_min_memory;
+		_mem_array_to_rep_count(step_ptr->memory_allocated,
+				        bit_set_count(step_ptr->
+						      step_node_bitmap),
+					&cred_arg.step_mem_alloc,
+					&cred_arg.step_mem_alloc_rep_count,
+					&cred_arg.step_mem_alloc_size);
+	}
 
 	cred_arg.cores_per_socket    = job_resrcs_ptr->cores_per_socket;
 	cred_arg.sockets_per_node    = job_resrcs_ptr->sockets_per_node;
