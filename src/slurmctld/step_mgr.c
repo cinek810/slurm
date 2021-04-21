@@ -1858,6 +1858,7 @@ static void _step_alloc_lps(step_record_t *step_ptr)
 	}
 
 	rem_nodes = bit_set_count(step_ptr->step_node_bitmap);
+	step_ptr->memory_allocated = xmalloc(rem_nodes * sizeof(uint64_t));
 	for (i_node = i_first; i_node <= i_last; i_node++) {
 		if (!bit_test(job_resrcs_ptr->node_bitmap, i_node))
 			continue;
@@ -1898,15 +1899,16 @@ static void _step_alloc_lps(step_record_t *step_ptr)
 		rem_nodes--;
 
 		if (step_ptr->pn_min_memory && _is_mem_resv()) {
+			uint64_t mem_use;
 			if (step_ptr->pn_min_memory & MEM_PER_CPU) {
-				uint64_t mem_use = step_ptr->pn_min_memory;
+				mem_use = step_ptr->pn_min_memory;
 				mem_use &= (~MEM_PER_CPU);
-				job_resrcs_ptr->memory_used[job_node_inx] +=
-					(mem_use * cpus_alloc);
+				mem_use *= cpus_alloc;
 			} else {
-				job_resrcs_ptr->memory_used[job_node_inx] +=
-					step_ptr->pn_min_memory;
+				mem_use = step_ptr->pn_min_memory;
 			}
+			step_ptr->memory_allocated[step_node_inx] = mem_use;
+			job_resrcs_ptr->memory_used[job_node_inx] += mem_use;
 		}
 		if (pick_step_cores) {
 			uint16_t cpus_per_core = 1;
