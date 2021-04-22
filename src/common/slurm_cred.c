@@ -1433,6 +1433,31 @@ slurm_cred_t *slurm_cred_unpack(buf_t *buffer, uint16_t protocol_version)
 		safe_unpack32(&cred->job_nhosts, buffer);
 		safe_unpackstr_xmalloc(&cred->job_hostlist, &len, buffer);
 
+		safe_unpack32(&cred->job_mem_alloc_size, buffer);
+		if (cred->job_mem_alloc_size) {
+			safe_unpack64_array(&cred->job_mem_alloc, &len, buffer);
+			if (len != cred->job_mem_alloc_size)
+				goto unpack_error;
+
+			safe_unpack32_array(&cred->job_mem_alloc_rep_count,
+					    &len, buffer);
+			if (len != cred->job_mem_alloc_size)
+				goto unpack_error;
+
+		}
+
+		safe_unpack32(&cred->step_mem_alloc_size, buffer);
+		if (cred->step_mem_alloc_size) {
+			safe_unpack64_array(&cred->step_mem_alloc, &len, buffer);
+			if (len != cred->step_mem_alloc_size)
+				goto unpack_error;
+
+			safe_unpack32_array(&cred->step_mem_alloc_rep_count,
+					    &len, buffer);
+			if (len != cred->step_mem_alloc_size)
+				goto unpack_error;
+		}
+
 		/* "sigp" must be last */
 		sigp = (char **) &cred->signature;
 		safe_unpackmem_xmalloc(sigp, &len, buffer);
@@ -1894,6 +1919,25 @@ static void _pack_cred(slurm_cred_t *cred, buf_t *buffer,
 		}
 		pack32(cred->job_nhosts, buffer);
 		packstr(cred->job_hostlist, buffer);
+		pack32(cred->job_mem_alloc_size, buffer);
+		if (cred->job_mem_alloc_size) {
+			pack64_array(cred->job_mem_alloc,
+				     cred->job_mem_alloc_size,
+				     buffer);
+			pack32_array(cred->job_mem_alloc_rep_count,
+				     cred->job_mem_alloc_size,
+				     buffer);
+
+		}
+		pack32(cred->step_mem_alloc_size, buffer);
+		if (cred->step_mem_alloc_size) {
+			pack64_array(cred->step_mem_alloc,
+				     cred->step_mem_alloc_size,
+				     buffer);
+			pack32_array(cred->step_mem_alloc_rep_count,
+				     cred->step_mem_alloc_size,
+				     buffer);
+		}
 	} else if (protocol_version >= SLURM_20_11_PROTOCOL_VERSION) {
 		pack_step_id(&cred->step_id, buffer, protocol_version);
 		pack32(cred_uid, buffer);
