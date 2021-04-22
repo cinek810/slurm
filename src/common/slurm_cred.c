@@ -885,6 +885,14 @@ static void _copy_cred_to_arg(slurm_cred_t *cred, slurm_cred_arg_t *arg)
 	memcpy(arg->sock_core_rep_count, cred->sock_core_rep_count,
 	       (sizeof(uint32_t) * cred->core_array_size));
 	arg->job_constraints = xstrdup(cred->job_constraints);
+	memcpy(arg->job_mem_alloc, cred->job_mem_alloc,
+	       sizeof(uint64_t) * cred->job_mem_alloc_size);
+	memcpy(arg->job_mem_alloc_rep_count, cred->job_mem_alloc_rep_count,
+	       sizeof(uint32_t) * cred->job_mem_alloc_size);
+	memcpy(arg->step_mem_alloc, cred->step_mem_alloc,
+	       sizeof(uint64_t) * cred->step_mem_alloc_size);
+	memcpy(arg->step_mem_alloc_rep_count, cred->step_mem_alloc_rep_count,
+	       sizeof(uint32_t) * cred->step_mem_alloc_size);
 	arg->job_nhosts      = cred->job_nhosts;
 	arg->job_hostlist    = xstrdup(cred->job_hostlist);
 }
