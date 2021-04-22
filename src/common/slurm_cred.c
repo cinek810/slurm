@@ -181,10 +181,12 @@ struct slurm_job_credential {
 				 * default=0 (no limit) */
 	uint64_t *job_mem_alloc;           /*Per node allocated memory in the*/
 	uint32_t *job_mem_alloc_rep_count; /*form of value and rep. count*/
+	uint32_t job_mem_alloc_size;
 
 	uint64_t  step_mem_limit;
 	uint64_t *step_mem_alloc;          /*Per node step allocated memory in*/
 	uint32_t *step_mem_alloc_rep_count;/*the form of value and rep.count*/
+	uint32_t step_mem_alloc_size;
 
 	uint16_t  core_array_size;	/* core/socket array size */
 	uint16_t *cores_per_socket;
