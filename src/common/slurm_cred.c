@@ -597,7 +597,8 @@ slurm_cred_create(slurm_cred_ctx_t ctx, slurm_cred_arg_t *arg,
 	cred->job_gres_list   = gres_job_state_dup(arg->job_gres_list);
 	cred->step_gres_list  = gres_step_state_dup(arg->step_gres_list);
 	cred->job_mem_limit   = arg->job_mem_limit;
-	if (arg->job_mem_alloc) {
+	if (arg->job_mem_alloc_size) {
+		cred->job_mem_alloc_size = arg->job_mem_alloc_size;
 		cred->job_mem_alloc = xcalloc(arg->job_mem_alloc_size,
 					      sizeof(uint64_t));
 		memcpy(cred->job_mem_alloc, arg->job_mem_alloc,
@@ -610,7 +611,8 @@ slurm_cred_create(slurm_cred_ctx_t ctx, slurm_cred_arg_t *arg,
 		       sizeof(uint32_t) * arg->job_mem_alloc_size);
 	}
 	cred->step_mem_limit  = arg->step_mem_limit;
-	if (arg->step_mem_alloc) {
+	if (arg->step_mem_alloc_size) {
+		cred->step_mem_alloc_size = arg->step_mem_alloc_size;
 		cred->step_mem_alloc = xcalloc(arg->step_mem_alloc_size,
 					       sizeof(uint64_t));
 		memcpy(cred->step_mem_alloc, arg->step_mem_alloc,
