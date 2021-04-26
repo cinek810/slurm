@@ -940,7 +940,7 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 {
 	slurm_cred_arg_t arg;
 	hostset_t	s_hset = NULL;
-	int		rep_id, host_index = -1;
+	int		host_index = -1;
 	slurm_cred_t    *cred = req->cred;
 	uint32_t	jobid = req->step_id.job_id;
 	uint32_t	stepid = req->step_id.step_id;
@@ -1179,8 +1179,8 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 	 * Overwrite any memory limits in the RPC with contents of the
 	 * memory limit within the credential.
 	 */
-	rep_id = slurm_cred_get_mem(cred, node_id, __func__,
-				    &req->job_mem_limit, &req->step_mem_limit);
+	slurm_cred_get_mem(cred, node_id, __func__, &req->job_mem_lim,
+				    &req->step_mem_lim);
 
 	/* Reset the CPU count on this node to correct value. */
 	req->job_core_spec = arg.job_core_spec;

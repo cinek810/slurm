@@ -233,14 +233,17 @@ extern void *slurm_cred_get_arg(slurm_cred_t *cred, int cred_arg_type);
 
 /*
  * Return index in rep_count array corresponding to absolute node index
- * rep_count - array containing number of repetitions
- * rep_count_size - number of elements in  the rep_count array
- * idx - absolute index of host
- * RET - rep_count index
+ * cred - job credential to use for memory setting
+ * node_id - absolute index of host
+ * func_name - name of the calling function (for logging purpose)
+ * jot_mem_limit - UPDATED job memory limit
+ * step_mem_limit - UPDATED step memory limit
  */
-extern int slurm_cred_get_rep_count_idx(uint32_t *rep_count,
-					uint32_t rep_count_size,
-					int idx);
+extern void slurm_cred_get_mem(slurm_cred_t *cred,
+			      int node_id,
+			      const char * func_name,
+			      uint64_t *job_mem_limit,
+			      uint64_t *step_mem_limit);
 /*
  * Verify the signed credential `cred,' and return cred contents in
  * the cred_arg structure. The credential is cached and cannot be reused.
