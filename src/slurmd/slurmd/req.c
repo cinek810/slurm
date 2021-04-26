@@ -926,6 +926,22 @@ static void _setup_x11_display(uint32_t job_id, uint32_t step_id_in,
 	*envc = envcount(*env);
 }
 
+static int _get_rep_count_inx(uint32_t *rep_count, uint32_t rep_count_size,
+			      int idx)
+{
+	int rep_count_sum = 0;
+	for (int i=0; i< rep_count_size; i++) {
+		if (rep_count_sum >= idx)
+			return i;
+		rep_count_sum++;
+		if (rep_count[i] == 0)
+			error("%s: rep_count should never be zero",
+			      __func__);
+		rep_count_sum += rep_count[i];
+	}
+	return -1;
+}
+
 /*
  * The job(step) credential is the only place to get a definitive
  * list of the nodes allocated to a job step.  We need to return
@@ -940,7 +956,7 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 {
 	slurm_cred_arg_t arg;
 	hostset_t	s_hset = NULL;
-	int		host_index = -1;
+	int		rep_id, host_index = -1;
 	slurm_cred_t    *cred = req->cred;
 	uint32_t	jobid = req->step_id.job_id;
 	uint32_t	stepid = req->step_id.step_id;
@@ -968,6 +984,7 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 	 */
 	if (slurm_cred_verify(conf->vctx, cred, &arg, protocol_version) < 0)
 		return SLURM_ERROR;
+	xassert(arg.job_mem_alloc);
 
 	if ((arg.step_id.job_id != jobid) || (arg.step_id.step_id != stepid)) {
 		error("job credential for %ps, expected %ps",
@@ -1178,26 +1195,27 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 	 * Overwrite any memory limits in the RPC with contents of the
 	 * memory limit within the credential.
 	 */
-	if (arg.step_mem_limit) {
-		if (arg.step_mem_limit & MEM_PER_CPU) {
-			req->step_mem_lim  = arg.step_mem_limit &
-				(~MEM_PER_CPU);
-			req->step_mem_lim *= step_cpus_for_mem;
-		} else
-			req->step_mem_lim  = arg.step_mem_limit;
+	rep_id = _get_rep_count_inx(arg.job_mem_alloc_rep_count,
+					arg.job_mem_alloc_size,
+					node_id);
+	if (rep_id < 0)
+		error("%s: node_id=%d, not found in job_mem_alloc_rep_count requested job memory not reset.",
+		      __func__, node_id);
+	else
+		req->job_mem_lim = arg.job_mem_alloc[rep_id];
+
+	if (arg.step_mem_alloc) {
+		rep_id = _get_rep_count_inx(arg.step_mem_alloc_rep_count,
+						arg.step_mem_alloc_size,
+						node_id);
+		if (rep_id < 0)
+			error("%s: node_id=%d, not found in step_mem_alloc_rep_count",
+			      __func__, node_id);
+		else
+			req->step_mem_lim = arg.step_mem_alloc[rep_id];
 	} else {
-		if (arg.job_mem_limit & MEM_PER_CPU) {
-			req->step_mem_lim  = arg.job_mem_limit &
-				(~MEM_PER_CPU);
-			req->step_mem_lim *= job_cpus_for_mem;
-		} else
-			req->step_mem_lim  = arg.job_mem_limit;
+		req->step_mem_lim = req->job_mem_lim;
 	}
-	if (arg.job_mem_limit & MEM_PER_CPU) {
-		req->job_mem_lim  = arg.job_mem_limit & (~MEM_PER_CPU);
-		req->job_mem_lim *= job_cpus_for_mem;
-	} else
-		req->job_mem_lim  = arg.job_mem_limit;
 
 	/* Reset the CPU count on this node to correct value. */
 	req->job_core_spec = arg.job_core_spec;
