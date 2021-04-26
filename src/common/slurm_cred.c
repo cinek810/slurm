@@ -848,6 +848,10 @@ void slurm_cred_free_args(slurm_cred_arg_t *arg)
 	xfree(arg->job_hostlist);
 	xfree(arg->sock_core_rep_count);
 	xfree(arg->sockets_per_node);
+	xfree(arg->job_mem_alloc);
+	xfree(arg->job_mem_alloc_rep_count);
+	xfree(arg->step_mem_alloc);
+	xfree(arg->step_mem_alloc_rep_count);
 }
 
 static void _copy_cred_to_arg(slurm_cred_t *cred, slurm_cred_arg_t *arg)
@@ -887,14 +891,24 @@ static void _copy_cred_to_arg(slurm_cred_t *cred, slurm_cred_arg_t *arg)
 	memcpy(arg->sock_core_rep_count, cred->sock_core_rep_count,
 	       (sizeof(uint32_t) * cred->core_array_size));
 	arg->job_constraints = xstrdup(cred->job_constraints);
+	arg->job_mem_alloc_size = cred->job_mem_alloc_size;
+	arg->job_mem_alloc = xcalloc(cred->job_mem_alloc_size,
+				     sizeof(uint64_t));
 	memcpy(arg->job_mem_alloc, cred->job_mem_alloc,
-	       sizeof(uint64_t) * cred->job_mem_alloc_size);
+	       (sizeof(uint64_t) * cred->job_mem_alloc_size));
+	arg->job_mem_alloc_rep_count = xcalloc(cred->job_mem_alloc_size,
+					       sizeof(uint32_t));
 	memcpy(arg->job_mem_alloc_rep_count, cred->job_mem_alloc_rep_count,
-	       sizeof(uint32_t) * cred->job_mem_alloc_size);
+	       (sizeof(uint32_t) * cred->job_mem_alloc_size));
+	arg->step_mem_alloc_size = cred->step_mem_alloc_size;
+	arg->step_mem_alloc = xcalloc(cred->step_mem_alloc_size,
+				      sizeof(uint64_t));
 	memcpy(arg->step_mem_alloc, cred->step_mem_alloc,
-	       sizeof(uint64_t) * cred->step_mem_alloc_size);
+	       (sizeof(uint64_t) * cred->step_mem_alloc_size));
+	arg->step_mem_alloc_rep_count = xcalloc(cred->step_mem_alloc_size,
+						sizeof(uint32_t));
 	memcpy(arg->step_mem_alloc_rep_count, cred->step_mem_alloc_rep_count,
-	       sizeof(uint32_t) * cred->step_mem_alloc_size);
+	       (sizeof(uint32_t) * cred->step_mem_alloc_size));
 	arg->job_nhosts      = cred->job_nhosts;
 	arg->job_hostlist    = xstrdup(cred->job_hostlist);
 }
@@ -1937,7 +1951,6 @@ static void _pack_cred(slurm_cred_t *cred, buf_t *buffer,
 			pack32_array(cred->job_mem_alloc_rep_count,
 				     cred->job_mem_alloc_size,
 				     buffer);
-
 		}
 		pack32(cred->step_mem_alloc_size, buffer);
 		if (cred->step_mem_alloc_size) {
