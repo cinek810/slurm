@@ -232,6 +232,16 @@ int slurm_cred_get_args(slurm_cred_t *cred, slurm_cred_arg_t *arg);
 extern void *slurm_cred_get_arg(slurm_cred_t *cred, int cred_arg_type);
 
 /*
+ * Return index in rep_count array corresponding to absolute node index
+ * rep_count - array containing number of repetitions
+ * rep_count_size - number of elements in  the rep_count array
+ * idx - absolute index of host
+ * RET - rep_count index
+ */
+extern int slurm_cred_get_rep_count_idx(uint32_t *rep_count,
+					uint32_t rep_count_size,
+					int idx);
+/*
  * Verify the signed credential `cred,' and return cred contents in
  * the cred_arg structure. The credential is cached and cannot be reused.
  *

@@ -926,22 +926,6 @@ static void _setup_x11_display(uint32_t job_id, uint32_t step_id_in,
 	*envc = envcount(*env);
 }
 
-static int _get_rep_count_inx(uint32_t *rep_count, uint32_t rep_count_size,
-			      int idx)
-{
-	int rep_count_sum = 0;
-	for (int i=0; i< rep_count_size; i++) {
-		if (rep_count_sum >= idx)
-			return i;
-		rep_count_sum++;
-		if (rep_count[i] == 0)
-			error("%s: rep_count should never be zero",
-			      __func__);
-		rep_count_sum += rep_count[i];
-	}
-	return -1;
-}
-
 /*
  * The job(step) credential is the only place to get a definitive
  * list of the nodes allocated to a job step.  We need to return
@@ -1195,27 +1179,8 @@ static int _check_job_credential(launch_tasks_request_msg_t *req,
 	 * Overwrite any memory limits in the RPC with contents of the
 	 * memory limit within the credential.
 	 */
-	rep_id = _get_rep_count_inx(arg.job_mem_alloc_rep_count,
-					arg.job_mem_alloc_size,
-					node_id);
-	if (rep_id < 0)
-		error("%s: node_id=%d, not found in job_mem_alloc_rep_count requested job memory not reset.",
-		      __func__, node_id);
-	else
-		req->job_mem_lim = arg.job_mem_alloc[rep_id];
-
-	if (arg.step_mem_alloc) {
-		rep_id = _get_rep_count_inx(arg.step_mem_alloc_rep_count,
-						arg.step_mem_alloc_size,
-						node_id);
-		if (rep_id < 0)
-			error("%s: node_id=%d, not found in step_mem_alloc_rep_count",
-			      __func__, node_id);
-		else
-			req->step_mem_lim = arg.step_mem_alloc[rep_id];
-	} else {
-		req->step_mem_lim = req->job_mem_lim;
-	}
+	rep_id = slurm_cred_get_mem(cred, node_id, __func__,
+				    &req->job_mem_limit, &req->step_mem_limit);
 
 	/* Reset the CPU count on this node to correct value. */
 	req->job_core_spec = arg.job_core_spec;
